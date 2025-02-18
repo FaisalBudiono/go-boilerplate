@@ -1,0 +1,51 @@
+name: Code Test
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test-build-api:
+    name: Test Build API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.3"
+      - name: Install dependencies
+        run: go mod download -x
+      - name: Build API
+        run: go build ./cmd/api/main.go
+
+  test-build-migrator:
+    name: Test Build Migrator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.3"
+      - name: Install dependencies
+        run: go mod download -x
+      - name: Build Migrator
+        run: go build ./cmd/migrator/main.go
+
+  test-secret:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: GitGuardian scan
+        uses: GitGuardian/ggshield-action@v1.36.0
+        env:
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
