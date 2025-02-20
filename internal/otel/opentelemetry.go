@@ -145,7 +145,7 @@ func (c *config) newTraceExporter() (trace.SpanExporter, error) {
 
 	return otlptracehttp.New(
 		c.ctx,
-		otlptracehttp.WithEndpoint(endpoint),
+		otlptracehttp.WithEndpointURL(endpoint),
 	)
 }
 
@@ -174,7 +174,7 @@ func (c *config) newMetricExporter() (metric.Exporter, error) {
 
 	return otlpmetrichttp.New(
 		c.ctx,
-		otlpmetrichttp.WithEndpoint(endpoint),
+		otlpmetrichttp.WithEndpointURL(endpoint),
 	)
 }
 
@@ -203,6 +203,6 @@ func (c *config) newLogExporter() (log.Exporter, error) {
 
 	return otlploghttp.New(
 		c.ctx,
-		otlploghttp.WithEndpoint(endpoint),
+		otlploghttp.WithEndpointURL(endpoint),
 	)
 }
