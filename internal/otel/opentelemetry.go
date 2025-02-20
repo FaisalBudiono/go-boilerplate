@@ -3,6 +3,7 @@ package otel
 import (
 	"context"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -45,8 +46,16 @@ func SetupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 		err = errors.Join(inErr, shutdown(ctx))
 	}
 
+	filename := "./logs/trace.log"
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		handleErr(err)
+		return
+	}
+	file.Close()
+
 	traceLogger := &lumberjack.Logger{
-		Filename:   "./logs/trace.log",
+		Filename:   filename,
 		MaxSize:    100, // megabytes
 		MaxBackups: 30,
 		MaxAge:     90, // days
