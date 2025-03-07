@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/viper"
@@ -47,6 +48,12 @@ func SetupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 	}
 
 	filename := "./logs/trace.log"
+	err = os.MkdirAll(filepath.Dir(filename), 0755)
+	if err != nil {
+		handleErr(err)
+		return
+	}
+
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		handleErr(err)
