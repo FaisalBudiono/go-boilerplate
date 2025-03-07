@@ -1,9 +1,9 @@
 package product
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/util/perm"
 	"FaisalBudiono/go-boilerplate/internal/domain"
 	"context"
+	"slices"
 
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -40,7 +40,7 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 
 	offset := (page - 1) * perPage
 
-	isNotAdmin := actor == nil || !perm.IsAdmin(*actor)
+	isNotAdmin := actor == nil || !slices.Contains(actor.Roles, domain.RoleAdmin)
 	if isNotAdmin {
 		products, total, err := srv.productFetcher.GetAll(ctx, srv.db, false, offset, perPage)
 		if err != nil {

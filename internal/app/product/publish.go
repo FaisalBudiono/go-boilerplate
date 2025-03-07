@@ -1,10 +1,10 @@
 package product
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/util/perm"
 	"FaisalBudiono/go-boilerplate/internal/domain"
 	"FaisalBudiono/go-boilerplate/internal/otel/spanattr"
 	"context"
+	"slices"
 
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/attribute"
@@ -31,7 +31,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 	)
 	span.SetAttributes(spanattr.Actor("input.", actor)...)
 
-	if !perm.IsAdmin(actor) {
+	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
 		return domain.Product{}, tracerr.Wrap(ErrNotEnoughPermission)
 	}
 

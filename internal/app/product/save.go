@@ -1,10 +1,10 @@
 package product
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/util/perm"
 	"FaisalBudiono/go-boilerplate/internal/domain"
 	"FaisalBudiono/go-boilerplate/internal/otel/spanattr"
 	"context"
+	"slices"
 	"strings"
 
 	"github.com/ztrue/tracerr"
@@ -32,7 +32,7 @@ func (srv *Product) Save(req inputSave) (domain.Product, error) {
 	)
 	span.SetAttributes(spanattr.Actor("input.", actor)...)
 
-	if !perm.IsAdmin(actor) {
+	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
 		return domain.Product{}, tracerr.Wrap(ErrNotEnoughPermission)
 	}
 
