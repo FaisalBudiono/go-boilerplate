@@ -3,6 +3,7 @@ package pg
 import (
 	"FaisalBudiono/go-boilerplate/internal/db"
 	"FaisalBudiono/go-boilerplate/internal/domain"
+	"FaisalBudiono/go-boilerplate/internal/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/otel/spanattr"
 	"context"
 	"fmt"
@@ -108,7 +109,7 @@ OFFSET $2
 
 		products = append(
 			products,
-			domain.NewProduct(p.id, p.name, p.price, p.publishedAt),
+			domain.NewProduct(domid.ProductID(p.id), p.name, p.price, p.publishedAt),
 		)
 	}
 
@@ -146,7 +147,7 @@ LIMIT
 	}
 
 	return domain.NewProduct(
-		p.id,
+		domid.ProductID(p.id),
 		p.name,
 		p.price,
 		p.publishedAt,

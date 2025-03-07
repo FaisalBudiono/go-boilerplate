@@ -14,14 +14,14 @@ func Actor(prefix string, u domain.User) []attribute.KeyValue {
 	}
 
 	return []attribute.KeyValue{
-		attribute.String(fmt.Sprintf("%sactor.id", prefix), u.ID),
+		attribute.String(fmt.Sprintf("%sactor.id", prefix), string(u.ID)),
 		attribute.StringSlice(fmt.Sprintf("%sactor.roles", prefix), rolesToString(u.Roles)),
 	}
 }
 
 func User(prefix string, u domain.User) []attribute.KeyValue {
 	return []attribute.KeyValue{
-		attribute.String(fmt.Sprintf("%suser.id", prefix), u.ID),
+		attribute.String(fmt.Sprintf("%suser.id", prefix), string(u.ID)),
 		attribute.StringSlice(fmt.Sprintf("%suser.roles", prefix), rolesToString(u.Roles)),
 	}
 }

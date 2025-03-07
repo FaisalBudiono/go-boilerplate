@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/domain"
+	"FaisalBudiono/go-boilerplate/internal/domain/domid"
 	"errors"
 	"time"
 
@@ -36,14 +37,14 @@ type userClaims struct {
 	ID string `json:"uid"`
 }
 
-func (s *userSigner) Sign(u domain.UserBasicInfo) (string, error) {
+func (s *userSigner) Sign(u domain.UserTokenInfo) (string, error) {
 	claims := userClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(s.expiredDuration)),
 		},
 
-		ID: u.ID,
+		ID: string(u.ID),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -55,30 +56,30 @@ func (s *userSigner) Sign(u domain.UserBasicInfo) (string, error) {
 	return ss, nil
 }
 
-func (s *userSigner) Parse(token string) (domain.UserBasicInfo, error) {
-	tok, err := jwt.ParseWithClaims(token, &userClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (s *userSigner) Parse(token string) (domain.UserTokenInfo, error) {
+	tok, err := jwt.ParseWithClaims(token, &userClaims{}, func(token *jwt.Token) (any, error) {
 		return s.key, nil
 	})
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenMalformed) {
-			return domain.UserBasicInfo{}, tracerr.Wrap(ErrTokenMalformed)
+			return domain.UserTokenInfo{}, tracerr.Wrap(ErrTokenMalformed)
 		}
 
 		if errors.Is(err, jwt.ErrSignatureInvalid) {
-			return domain.UserBasicInfo{}, tracerr.Wrap(ErrSignatureInvalid)
+			return domain.UserTokenInfo{}, tracerr.Wrap(ErrSignatureInvalid)
 		}
 
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return domain.UserBasicInfo{}, tracerr.Wrap(ErrTokenExpired)
+			return domain.UserTokenInfo{}, tracerr.Wrap(ErrTokenExpired)
 		}
 
-		return domain.UserBasicInfo{}, tracerr.Wrap(err)
+		return domain.UserTokenInfo{}, tracerr.Wrap(err)
 	}
 
 	claims, ok := tok.Claims.(*userClaims)
 	if !ok {
-		return domain.UserBasicInfo{}, tracerr.New("Failed to fetch claims")
+		return domain.UserTokenInfo{}, tracerr.New("Failed to fetch claims")
 	}
 
-	return domain.NewUserBasicInfo(claims.ID), nil
+	return domain.NewUserBasicInfo(domid.UserID(claims.ID)), nil
 }

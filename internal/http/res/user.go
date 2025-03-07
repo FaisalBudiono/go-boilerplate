@@ -20,11 +20,11 @@ func ToUser(u domain.User) response[user] {
 
 	return response[user]{
 		Data: user{
-            ID: u.ID,
-            Name: u.Name,
-            PhoneNumber: u.PhoneNumber,
-            Email: u.Email,
-            Roles: roles,
-        },
+			ID:          string(u.ID),
+			Name:        u.Name,
+			PhoneNumber: u.PhoneNumber,
+			Email:       u.Email,
+			Roles:       roles,
+		},
 	}
 }

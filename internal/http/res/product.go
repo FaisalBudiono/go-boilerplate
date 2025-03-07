@@ -21,7 +21,7 @@ func ToProduct(p domain.Product) response[product] {
 
 	return response[product]{
 		Data: product{
-			ID:          p.ID,
+			ID:          string(p.ID),
 			Name:        p.Name,
 			Price:       p.Price / 100,
 			PublishedAt: pubAt,
@@ -56,7 +56,7 @@ func toProductRes(p domain.Product) product {
 	}
 
 	return product{
-		ID:          p.ID,
+		ID:          string(p.ID),
 		Name:        p.Name,
 		Price:       p.Price / 100,
 		PublishedAt: pubAt,

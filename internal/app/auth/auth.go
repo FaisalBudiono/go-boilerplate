@@ -42,11 +42,11 @@ type (
 	}
 
 	jwtUserSigner interface {
-		Sign(u domain.UserBasicInfo) (string, error)
+		Sign(u domain.UserTokenInfo) (string, error)
 	}
 
 	jwtUserParser interface {
-		Parse(token string) (domain.UserBasicInfo, error)
+		Parse(token string) (domain.UserTokenInfo, error)
 	}
 
 	refreshTokenSigner interface {

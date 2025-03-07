@@ -15,7 +15,7 @@ func Product(prefix string, p domain.Product) []attribute.KeyValue {
 	}
 
 	return []attribute.KeyValue{
-		attribute.String(fmt.Sprintf("%sproduct.id", prefix), p.ID),
+		attribute.String(fmt.Sprintf("%sproduct.id", prefix), string(p.ID)),
 		attribute.String(fmt.Sprintf("%sproduct.name", prefix), p.Name),
 		attribute.Int64(fmt.Sprintf("%sproduct.price", prefix), p.Price),
 		attribute.String(fmt.Sprintf("%sproduct.publishedAt", prefix), pubAt),

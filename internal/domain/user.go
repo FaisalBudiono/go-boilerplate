@@ -1,17 +1,19 @@
 package domain
 
-type UserBasicInfo struct {
-	ID string
+import "FaisalBudiono/go-boilerplate/internal/domain/domid"
+
+type UserTokenInfo struct {
+	ID domid.UserID
 }
 
-func NewUserBasicInfo(id string) UserBasicInfo {
-	return UserBasicInfo{
+func NewUserBasicInfo(id domid.UserID) UserTokenInfo {
+	return UserTokenInfo{
 		ID: id,
 	}
 }
 
 type User struct {
-	ID          string
+	ID          domid.UserID
 	Name        string
 	PhoneNumber string
 	Email       string
@@ -20,7 +22,7 @@ type User struct {
 }
 
 func NewUser(
-	id string,
+	id domid.UserID,
 	name string,
 	phoneNumber string,
 	email string,

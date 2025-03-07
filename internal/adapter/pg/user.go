@@ -3,6 +3,7 @@ package pg
 import (
 	"FaisalBudiono/go-boilerplate/internal/db"
 	"FaisalBudiono/go-boilerplate/internal/domain"
+	"FaisalBudiono/go-boilerplate/internal/domain/domid"
 	"context"
 
 	"github.com/ztrue/tracerr"
@@ -60,7 +61,7 @@ LIMIT
 	}
 
 	return domain.NewUser(
-		u.id,
+		domid.UserID(u.id),
 		u.name,
 		u.phoneNumber,
 		u.email,
@@ -105,7 +106,7 @@ LIMIT
 	}
 
 	return domain.NewUser(
-		u.id,
+		domid.UserID(u.id),
 		u.name,
 		u.phoneNumber,
 		u.email,
