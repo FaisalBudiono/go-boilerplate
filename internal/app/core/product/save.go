@@ -50,7 +50,7 @@ func (srv *Product) Save(req inputSave) (domain.Product, error) {
 	}
 	defer tx.Rollback()
 
-	p, err := srv.productSaver.Save(ctx, tx, name, price)
+	p, err := srv.productRepo.Save(ctx, tx, name, price)
 	if err != nil {
 		return domain.Product{}, err
 	}

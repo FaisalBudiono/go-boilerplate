@@ -3,7 +3,6 @@ package pg
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
-	"FaisalBudiono/go-boilerplate/internal/db"
 	"context"
 	"time"
 
@@ -16,7 +15,7 @@ type authActivity struct {
 	tracer trace.Tracer
 }
 
-func (repo *authActivity) DeleteByPayload(ctx context.Context, tx db.DBTX, payload string) error {
+func (repo *authActivity) DeleteByPayload(ctx context.Context, tx domain.DBTX, payload string) error {
 	ctx, span := repo.tracer.Start(ctx, "postgres: soft delete auth activity by payload")
 	defer span.End()
 
@@ -49,7 +48,7 @@ RETURNING user_id
 }
 
 // Returning userID if successfully update last activity
-func (repo *authActivity) LastActivityByPayload(ctx context.Context, tx db.DBTX, payload string) (string, error) {
+func (repo *authActivity) LastActivityByPayload(ctx context.Context, tx domain.DBTX, payload string) (string, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: update last activity by payload")
 	defer span.End()
 
@@ -81,7 +80,7 @@ RETURNING user_id
 	return userID, nil
 }
 
-func (repo *authActivity) Save(ctx context.Context, tx db.DBTX, payload string, u domain.User) error {
+func (repo *authActivity) Save(ctx context.Context, tx domain.DBTX, payload string, u domain.User) error {
 	ctx, span := repo.tracer.Start(ctx, "postgres: save auth_activities token")
 	defer span.End()
 

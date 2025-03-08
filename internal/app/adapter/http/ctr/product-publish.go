@@ -1,13 +1,13 @@
 package ctr
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res/errcode"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/http/req"
-	"FaisalBudiono/go-boilerplate/internal/http/res"
-	"FaisalBudiono/go-boilerplate/internal/http/res/errcode"
-	"FaisalBudiono/go-boilerplate/internal/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/util/otel"
 	"context"
 	"encoding/json"
 	"errors"
@@ -19,16 +19,16 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type reqSaveProduct struct {
-	ctx          context.Context
-	actor        domain.User
-	priceInCents int64
+type reqPublishProduct struct {
+	ctx       context.Context
+	actor     domain.User
+	productID string
+	isPublish bool
 
-	BodyName  string      `json:"name" validate:"required"`
-	BodyPrice json.Number `json:"price"`
+	BodyIsPublish *bool `json:"isPublish" validate:"required"`
 }
 
-func (r *reqSaveProduct) Bind(c echo.Context) error {
+func (r *reqPublishProduct) Bind(c echo.Context) error {
 	msgs := make(map[string][]string, 0)
 
 	err := c.Bind(r)
@@ -38,11 +38,8 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 			return tracerr.Wrap(err)
 		}
 
-		if jsonErr.Field == "name" {
-			msgs["name"] = append(msgs["name"], "string")
-		}
-		if jsonErr.Field == "price" {
-			msgs["price"] = append(msgs["price"], "number")
+		if jsonErr.Field == "isPublish" {
+			msgs["isPublish"] = append(msgs["isPublish"], "boolean")
 		}
 	}
 
@@ -54,44 +51,40 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 		}
 
 		for _, fe := range valErr {
-			if fe.Field() == "BodyName" {
-				msgs["name"] = append(msgs["name"], fe.Tag())
+			if fe.Field() == "BodyIsPublish" {
+				msgs["isPublish"] = append(msgs["isPublish"], fe.Tag())
 			}
 		}
 	}
-
-	price, err := r.BodyPrice.Int64()
-	if err != nil {
-		msgs["price"] = append(msgs["price"], "number")
-	}
-	r.priceInCents = price * 100
 
 	if len(msgs) > 0 {
 		return res.NewErrorUnprocessable(msgs)
 	}
 
+	r.isPublish = *r.BodyIsPublish
+
 	return nil
 }
 
-func (r *reqSaveProduct) Actor() domain.User {
+func (r *reqPublishProduct) Actor() domain.User {
 	return r.actor
 }
 
-func (r *reqSaveProduct) Context() context.Context {
+func (r *reqPublishProduct) Context() context.Context {
 	return r.ctx
 }
 
-func (r *reqSaveProduct) Name() string {
-	return r.BodyName
+func (r *reqPublishProduct) IsPublish() bool {
+	return r.isPublish
 }
 
-func (r *reqSaveProduct) Price() int64 {
-	return r.priceInCents
+func (r *reqPublishProduct) ProductID() string {
+	return r.productID
 }
 
-func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
+func PublishProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: save product")
+		ctx, span := tracer.Start(c.Request().Context(), "route: publish product")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)
@@ -101,19 +94,23 @@ func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) 
 				errors.Is(err, req.ErrTokenExpired)
 
 			if isTokenNotProvidedErr {
-				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
+				return c.JSON(
+					http.StatusUnauthorized,
+					res.NewError(err.Error(), errcode.AuthUnauthorized),
+				)
 			}
 			otel.SpanLogError(span, err, "error when parsing token")
 
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		input := &reqSaveProduct{
-			ctx:   ctx,
-			actor: u,
+		i := &reqPublishProduct{
+			ctx:       ctx,
+			productID: c.Param("productID"),
+			actor:     u,
 		}
 
-		err = input.Bind(c)
+		err = i.Bind(c)
 		if err != nil {
 			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
@@ -123,7 +120,7 @@ func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) 
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		p, err := srv.Save(input)
+		p, err := srv.Publish(i)
 		if err != nil {
 			if errors.Is(err, product.ErrNotEnoughPermission) {
 				return c.JSON(
@@ -131,16 +128,10 @@ func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) 
 					res.NewError(err.Error(), errcode.AuthPermissionInsufficient),
 				)
 			}
-			if errors.Is(err, product.ErrEmptyName) {
+			if errors.Is(err, product.ErrNotFound) {
 				return c.JSON(
-					http.StatusConflict,
-					res.NewError(err.Error(), errcode.ProductEmptyName),
-				)
-			}
-			if errors.Is(err, product.ErrNegativePrice) {
-				return c.JSON(
-					http.StatusConflict,
-					res.NewError(err.Error(), errcode.ProductNegativePrice),
+					http.StatusNotFound,
+					res.NewError("Product not found", errcode.ProductNotFound),
 				)
 			}
 			otel.SpanLogError(span, err, "error caught in service")
@@ -148,6 +139,6 @@ func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) 
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusCreated, res.ToProduct(p))
+		return c.JSON(http.StatusOK, res.ToProduct(p))
 	}
 }

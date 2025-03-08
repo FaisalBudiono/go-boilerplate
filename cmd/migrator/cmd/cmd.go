@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/db"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/db"
 	"bufio"
 	"fmt"
 	"os"

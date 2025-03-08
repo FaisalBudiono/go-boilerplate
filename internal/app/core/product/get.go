@@ -49,7 +49,7 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 }
 
 func (srv *Product) forceFindProductByID(ctx context.Context, productID string) (domain.Product, error) {
-	p, err := srv.productIDFinder.FindByID(ctx, srv.db, productID)
+	p, err := srv.productRepo.FindByID(ctx, srv.db, productID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Product{}, tracerr.CustomError(ErrNotFound, tracerr.StackTrace(err))

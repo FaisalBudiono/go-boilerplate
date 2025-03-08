@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"FaisalBudiono/go-boilerplate/cmd/migrator/seeder"
-	"FaisalBudiono/go-boilerplate/internal/db"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/db"
 	"context"
 	"fmt"
 

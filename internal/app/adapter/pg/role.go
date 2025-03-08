@@ -2,7 +2,6 @@ package pg
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/db"
 	"context"
 
 	"github.com/ztrue/tracerr"
@@ -14,7 +13,7 @@ type roleRepo struct {
 	tracer trace.Tracer
 }
 
-func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx db.DBTX, userID string) ([]domain.Role, error) {
+func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx domain.DBTX, userID string) ([]domain.Role, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: refetched roles")
 	defer span.End()
 

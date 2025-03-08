@@ -37,7 +37,7 @@ func (srv *Auth) Logout(req inputLogout) error {
 	}
 	defer tx.Rollback()
 
-	err = srv.authActivityPayloadDeleter.DeleteByPayload(ctx, tx, payload)
+	err = srv.authActivityRepo.DeleteByPayload(ctx, tx, payload)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return tracerr.CustomError(ErrTokenExpired, tracerr.StackTrace(err))

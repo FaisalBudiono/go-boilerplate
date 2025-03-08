@@ -2,7 +2,7 @@ package ctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
-	"FaisalBudiono/go-boilerplate/internal/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/util/otel"
 	"context"
 	"log/slog"
 	"net/http"
@@ -26,7 +26,7 @@ func (r *healthReq) Context() context.Context {
 
 func Health(tracer trace.Tracer, l *slog.Logger, srv *ht.Healthcheck) echo.HandlerFunc {
 	return func(c echo.Context) error {
-        ctx, span := tracer.Start(c.Request().Context(), "route: healthcheck")
+		ctx, span := tracer.Start(c.Request().Context(), "route: healthcheck")
 		defer span.End()
 
 		err := srv.Healthcheck(&healthReq{

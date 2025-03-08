@@ -2,8 +2,7 @@ package auth
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/db"
-	"context"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"database/sql"
 	"errors"
 
@@ -17,26 +16,6 @@ var (
 )
 
 type (
-	userIDFinder interface {
-		FindByID(ctx context.Context, tx db.DBTX, id string) (domain.User, error)
-	}
-
-	userEmailFinder interface {
-		FindByEmail(ctx context.Context, tx db.DBTX, email string) (domain.User, error)
-	}
-
-	authActivitySaver interface {
-		Save(ctx context.Context, tx db.DBTX, payload string, u domain.User) error
-	}
-
-	authActivityLastActivityUpdater interface {
-		LastActivityByPayload(ctx context.Context, tx db.DBTX, payload string) (string, error)
-	}
-
-	authActivityPayloadDeleter interface {
-		DeleteByPayload(ctx context.Context, tx db.DBTX, payload string) error
-	}
-
 	passwordVerifier interface {
 		Verify(password, encodedHash string) (match bool, err error)
 	}
@@ -59,15 +38,11 @@ type (
 )
 
 type Auth struct {
-	db    *sql.DB
+	db     *sql.DB
 	tracer trace.Tracer
 
-	authActivitySaver               authActivitySaver
-	authActivityLastActivityUpdater authActivityLastActivityUpdater
-	authActivityPayloadDeleter      authActivityPayloadDeleter
-
-	userIDFinder    userIDFinder
-	userEmailFinder userEmailFinder
+	authActivityRepo portout.AuthActivityRepo
+	userRepo         portout.UserRepo
 
 	passwordVerifier passwordVerifier
 
@@ -81,11 +56,8 @@ type Auth struct {
 func New(
 	db *sql.DB,
 	tracer trace.Tracer,
-	authActivitySaver authActivitySaver,
-	authActivityLastActivityUpdater authActivityLastActivityUpdater,
-	authActivityPayloadDeleter authActivityPayloadDeleter,
-	userIDFinder userIDFinder,
-	userEmailFinder userEmailFinder,
+	authActivityRepo portout.AuthActivityRepo,
+	userRepo portout.UserRepo,
 	passwordVerifier passwordVerifier,
 	jwtUserSigner jwtUserSigner,
 	jwtUserParser jwtUserParser,
@@ -93,15 +65,11 @@ func New(
 	refreshTokenPayloadParser refreshTokenPayloadParser,
 ) *Auth {
 	return &Auth{
-		db:    db,
+		db:     db,
 		tracer: tracer,
 
-		authActivitySaver:               authActivitySaver,
-		authActivityLastActivityUpdater: authActivityLastActivityUpdater,
-		authActivityPayloadDeleter:      authActivityPayloadDeleter,
-
-		userIDFinder:    userIDFinder,
-		userEmailFinder: userEmailFinder,
+		authActivityRepo: authActivityRepo,
+		userRepo:         userRepo,
 
 		passwordVerifier: passwordVerifier,
 

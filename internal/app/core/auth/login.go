@@ -30,7 +30,7 @@ func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
 	}
 	defer tx.Rollback()
 
-	u, err := srv.userEmailFinder.FindByEmail(ctx, tx, email)
+	u, err := srv.userRepo.FindByEmail(ctx, tx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Token{}, tracerr.CustomError(
@@ -57,7 +57,7 @@ func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
 	}
 
 	refreshTokenPayload := rnd.UUID()
-	err = srv.authActivitySaver.Save(ctx, tx, refreshTokenPayload, u)
+	err = srv.authActivityRepo.Save(ctx, tx, refreshTokenPayload, u)
 	if err != nil {
 		return domain.Token{}, err
 	}

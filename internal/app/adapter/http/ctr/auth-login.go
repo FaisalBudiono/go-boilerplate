@@ -1,10 +1,10 @@
 package ctr
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res/errcode"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
-	"FaisalBudiono/go-boilerplate/internal/http/res"
-	"FaisalBudiono/go-boilerplate/internal/http/res/errcode"
-	"FaisalBudiono/go-boilerplate/internal/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/util/otel"
 	"context"
 	"encoding/json"
 	"errors"
@@ -16,14 +16,15 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type reqAuthRefreshToken struct {
+type reqAuthLogin struct {
 	ctx    context.Context
 	tracer trace.Tracer
 
-	BodyRefreshToken string `json:"refreshToken" validate:"required"`
+	BodyEmail    string `json:"email" validate:"required"`
+	BodyPassword string `json:"password" validate:"required"`
 }
 
-func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
+func (r *reqAuthLogin) Bind(c echo.Context) error {
 	msgs := make(map[string][]string, 0)
 
 	err := c.Bind(r)
@@ -33,8 +34,11 @@ func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
 			return tracerr.Wrap(err)
 		}
 
-		if jsonErr.Field == "refreshToken" {
-			msgs["refreshToken"] = append(msgs["refreshToken"], "string")
+		if jsonErr.Field == "email" {
+			msgs["email"] = append(msgs["email"], "string")
+		}
+		if jsonErr.Field == "password" {
+			msgs["password"] = append(msgs["password"], "string")
 		}
 	}
 
@@ -46,8 +50,11 @@ func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
 		}
 
 		for _, fe := range valErr {
-			if fe.Field() == "BodyRefreshToken" {
-				msgs["refreshToken"] = append(msgs["refreshToken"], fe.Tag())
+			if fe.Field() == "BodyEmail" {
+				msgs["email"] = append(msgs["email"], fe.Tag())
+			}
+			if fe.Field() == "BodyPassword" {
+				msgs["password"] = append(msgs["password"], fe.Tag())
 			}
 		}
 	}
@@ -59,20 +66,24 @@ func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
 	return nil
 }
 
-func (r *reqAuthRefreshToken) Context() context.Context {
+func (r *reqAuthLogin) Context() context.Context {
 	return r.ctx
 }
 
-func (r *reqAuthRefreshToken) RefreshToken() string {
-	return r.BodyRefreshToken
+func (r *reqAuthLogin) Email() string {
+	return r.BodyEmail
 }
 
-func AuthRefresh(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
+func (r *reqAuthLogin) Password() string {
+	return r.BodyPassword
+}
+
+func AuthLogin(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: refresh token")
+		ctx, span := tracer.Start(c.Request().Context(), "route: login")
 		defer span.End()
 
-		i := &reqAuthRefreshToken{
+		i := &reqAuthLogin{
 			ctx:    ctx,
 			tracer: tracer,
 		}
@@ -87,12 +98,12 @@ func AuthRefresh(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		token, err := srv.RefreshToken(i)
+		token, err := srv.Login(i)
 		if err != nil {
-			if errors.Is(err, auth.ErrInvalidToken) {
+			if errors.Is(err, auth.ErrInvalidCredentials) {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError("Invalid refresh token", errcode.AuthInvalidCredentials),
+					res.NewError(err.Error(), errcode.AuthInvalidCredentials),
 				)
 			}
 			otel.SpanLogError(span, err, "error caught in service")

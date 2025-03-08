@@ -1,6 +1,7 @@
 package res
 
-import "FaisalBudiono/go-boilerplate/internal/http/res/errcode"
+import "FaisalBudiono/go-boilerplate/internal/app/adapter/http/res/errcode"
+
 
 type errResponse struct {
 	Msg     string       `json:"message"`

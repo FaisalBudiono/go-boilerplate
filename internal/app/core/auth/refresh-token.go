@@ -40,7 +40,7 @@ func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
 	}
 	defer tx.Rollback()
 
-	userID, err := srv.authActivityLastActivityUpdater.LastActivityByPayload(ctx, tx, payload)
+	userID, err := srv.authActivityRepo.LastActivityByPayload(ctx, tx, payload)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Token{}, tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))

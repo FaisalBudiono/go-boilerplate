@@ -1,13 +1,13 @@
 package ctr
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res/errcode"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/http/req"
-	"FaisalBudiono/go-boilerplate/internal/http/res"
-	"FaisalBudiono/go-boilerplate/internal/http/res/errcode"
-	"FaisalBudiono/go-boilerplate/internal/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/util/otel"
 	"context"
 	"errors"
 	"net/http"

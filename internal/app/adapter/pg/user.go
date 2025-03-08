@@ -3,7 +3,6 @@ package pg
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
-	"FaisalBudiono/go-boilerplate/internal/db"
 	"context"
 
 	"github.com/ztrue/tracerr"
@@ -25,7 +24,7 @@ type user struct {
 	password    string
 }
 
-func (repo *userRepo) FindByID(ctx context.Context, tx db.DBTX, id string) (domain.User, error) {
+func (repo *userRepo) FindByID(ctx context.Context, tx domain.DBTX, id string) (domain.User, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByID users")
 	defer span.End()
 
@@ -69,7 +68,7 @@ LIMIT
 	), nil
 }
 
-func (repo *userRepo) FindByEmail(ctx context.Context, tx db.DBTX, email string) (domain.User, error) {
+func (repo *userRepo) FindByEmail(ctx context.Context, tx domain.DBTX, email string) (domain.User, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByEmail users")
 	defer span.End()
 

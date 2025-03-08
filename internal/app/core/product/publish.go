@@ -46,7 +46,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 	}
 	defer tx.Rollback()
 
-	p, err = srv.productPublisher.Publish(ctx, tx, p, isPublish)
+	p, err = srv.productRepo.Publish(ctx, tx, p, isPublish)
 	if err != nil {
 		return domain.Product{}, err
 	}
