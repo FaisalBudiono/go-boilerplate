@@ -1,16 +1,16 @@
 package main
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/adapter/pg"
-	"FaisalBudiono/go-boilerplate/internal/app/auth"
-	"FaisalBudiono/go-boilerplate/internal/app/auth/jwt"
-	"FaisalBudiono/go-boilerplate/internal/app/hash"
-	"FaisalBudiono/go-boilerplate/internal/app/ht"
-	"FaisalBudiono/go-boilerplate/internal/app/product"
-	"FaisalBudiono/go-boilerplate/internal/db"
-	"FaisalBudiono/go-boilerplate/internal/env"
-	"FaisalBudiono/go-boilerplate/internal/http/ctr"
-	"FaisalBudiono/go-boilerplate/internal/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/db"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/ctr"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/pg"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
+	"FaisalBudiono/go-boilerplate/internal/app/core/product"
 	"context"
 	"time"
 
@@ -60,9 +60,6 @@ func main() {
 		dbconn,
 		tracer,
 		authActivityRepo,
-		authActivityRepo,
-		authActivityRepo,
-		userRepo,
 		userRepo,
 		argonHasher,
 		jwtUserSigner,
@@ -74,9 +71,6 @@ func main() {
 	productSrv := product.New(
 		dbconn,
 		tracer,
-		productRepo,
-		productRepo,
-		productRepo,
 		productRepo,
 	)
 

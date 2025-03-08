@@ -1,9 +1,8 @@
 package seeder
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/hash"
-	"FaisalBudiono/go-boilerplate/internal/db"
-	"FaisalBudiono/go-boilerplate/internal/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
 	"database/sql"
 	"errors"
@@ -14,7 +13,7 @@ import (
 
 type superAdmin struct {
 	ctx context.Context
-	db  db.DBTX
+	db  domain.DBTX
 }
 
 func (r *superAdmin) Name() string {
@@ -123,6 +122,6 @@ VALUES
 	return tracerr.Wrap(err)
 }
 
-func NewSuperAdmin(ctx context.Context, db db.DBTX) *superAdmin {
+func NewSuperAdmin(ctx context.Context, db domain.DBTX) *superAdmin {
 	return &superAdmin{ctx, db}
 }
