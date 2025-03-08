@@ -2,6 +2,7 @@ package product
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
 	"context"
 	"database/sql"
@@ -22,10 +23,10 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 	ctx, span := srv.tracer.Start(req.Context(), "service: get product")
 	defer span.End()
 
-	pID := req.ProductID()
-	span.SetAttributes(attribute.String("input.product.id", pID))
+	productID := req.ProductID()
+	span.SetAttributes(attribute.String("input.product.id", productID))
 
-	p, err := srv.forceFindProductByID(ctx, req.ProductID())
+	p, err := srv.forceFindProductByID(ctx, domid.ProductID(productID))
 	if err != nil {
 		return domain.Product{}, err
 	}
@@ -48,8 +49,8 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 	return p, nil
 }
 
-func (srv *Product) forceFindProductByID(ctx context.Context, productID string) (domain.Product, error) {
-	p, err := srv.productRepo.FindByID(ctx, srv.db, productID)
+func (srv *Product) forceFindProductByID(ctx context.Context, id domid.ProductID) (domain.Product, error) {
+	p, err := srv.productRepo.FindByID(ctx, srv.db, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Product{}, tracerr.CustomError(ErrNotFound, tracerr.StackTrace(err))

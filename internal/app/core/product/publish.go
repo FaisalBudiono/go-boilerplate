@@ -2,6 +2,7 @@ package product
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
 	"context"
 	"slices"
@@ -35,7 +36,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 		return domain.Product{}, tracerr.Wrap(ErrNotEnoughPermission)
 	}
 
-	p, err := srv.forceFindProductByID(ctx, productID)
+	p, err := srv.forceFindProductByID(ctx, domid.ProductID(productID))
 	if err != nil {
 		return domain.Product{}, err
 	}

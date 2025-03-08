@@ -35,5 +35,5 @@ func (srv *Auth) ParseToken(req inputParseToken) (domain.User, error) {
 		return domain.User{}, err
 	}
 
-	return srv.userRepo.FindByID(ctx, srv.db, string(ubasic.ID))
+	return srv.userRepo.FindByID(ctx, srv.db, ubasic.ID)
 }

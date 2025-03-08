@@ -115,11 +115,11 @@ OFFSET $2
 	return products, total, nil
 }
 
-func (repo *productRepo) FindByID(ctx context.Context, tx domain.DBTX, id string) (domain.Product, error) {
+func (repo *productRepo) FindByID(ctx context.Context, tx domain.DBTX, id domid.ProductID) (domain.Product, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByID products")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.id", id))
+	span.SetAttributes(attribute.String("input.id", string(id)))
 
 	p := product{}
 
@@ -212,7 +212,7 @@ RETURNING id;
 		return domain.Product{}, tracerr.Wrap(err)
 	}
 
-	return repo.FindByID(ctx, tx, strconv.FormatInt(id, 10))
+	return repo.FindByID(ctx, tx, domid.ProductID(strconv.FormatInt(id, 10)))
 }
 
 func NewProduct(tracer trace.Tracer) *productRepo {

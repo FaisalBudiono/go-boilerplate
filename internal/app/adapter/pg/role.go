@@ -2,6 +2,7 @@ package pg
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"context"
 
 	"github.com/ztrue/tracerr"
@@ -13,11 +14,11 @@ type roleRepo struct {
 	tracer trace.Tracer
 }
 
-func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx domain.DBTX, userID string) ([]domain.Role, error) {
+func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx domain.DBTX, id domid.UserID) ([]domain.Role, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: refetched roles")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.user.id", userID))
+	span.SetAttributes(attribute.String("input.user.id", string(id)))
 
 	rows, err := tx.QueryContext(ctx, `
 SELECT
@@ -30,7 +31,7 @@ WHERE
 ORDER BY
     created_at ASC;
     `,
-		userID,
+		id,
 	)
 	if err != nil {
 		return nil, tracerr.Wrap(err)

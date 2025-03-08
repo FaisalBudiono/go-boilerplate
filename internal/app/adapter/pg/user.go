@@ -24,11 +24,11 @@ type user struct {
 	password    string
 }
 
-func (repo *userRepo) FindByID(ctx context.Context, tx domain.DBTX, id string) (domain.User, error) {
+func (repo *userRepo) FindByID(ctx context.Context, tx domain.DBTX, id domid.UserID) (domain.User, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByID users")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.id", id))
+	span.SetAttributes(attribute.String("input.id", string(id)))
 
 	u := user{}
 	err := tx.QueryRowContext(
@@ -53,7 +53,7 @@ LIMIT
 		return domain.User{}, tracerr.Wrap(err)
 	}
 
-	roles, err := repo.r.RefetchedRoles(ctx, tx, u.id)
+	roles, err := repo.r.RefetchedRoles(ctx, tx, domid.UserID(u.id))
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -98,7 +98,7 @@ LIMIT
 		return domain.User{}, tracerr.Wrap(err)
 	}
 
-	roles, err := repo.r.RefetchedRoles(ctx, tx, u.id)
+	roles, err := repo.r.RefetchedRoles(ctx, tx, domid.UserID(u.id))
 	if err != nil {
 		return domain.User{}, err
 	}

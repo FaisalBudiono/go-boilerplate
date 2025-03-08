@@ -2,6 +2,7 @@ package pg
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
 	"context"
 	"time"
@@ -47,8 +48,7 @@ RETURNING user_id
 	return nil
 }
 
-// Returning userID if successfully update last activity
-func (repo *authActivity) LastActivityByPayload(ctx context.Context, tx domain.DBTX, payload string) (string, error) {
+func (repo *authActivity) LastActivityByPayload(ctx context.Context, tx domain.DBTX, payload string) (domid.UserID, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: update last activity by payload")
 	defer span.End()
 
@@ -77,7 +77,7 @@ RETURNING user_id
 		return "", tracerr.Wrap(err)
 	}
 
-	return userID, nil
+	return domid.UserID(userID), nil
 }
 
 func (repo *authActivity) Save(ctx context.Context, tx domain.DBTX, payload string, u domain.User) error {
