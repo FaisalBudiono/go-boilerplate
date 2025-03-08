@@ -1,7 +1,7 @@
 package ctr
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/ht"
+	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
 	"FaisalBudiono/go-boilerplate/internal/otel"
 	"context"
 	"log/slog"

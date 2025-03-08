@@ -1,6 +1,6 @@
 package res
 
-import "FaisalBudiono/go-boilerplate/internal/domain"
+import "FaisalBudiono/go-boilerplate/internal/app/domain"
 
 type Auth struct {
 	Type         string `json:"type"`

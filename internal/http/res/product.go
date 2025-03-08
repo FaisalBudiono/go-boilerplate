@@ -1,7 +1,7 @@
 package res
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"time"
 )
 

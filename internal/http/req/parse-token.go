@@ -1,8 +1,8 @@
 package req
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/auth"
-	"FaisalBudiono/go-boilerplate/internal/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
 	"errors"
 	"strings"

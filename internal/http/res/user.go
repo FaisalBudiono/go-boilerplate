@@ -1,8 +1,6 @@
 package res
 
-import (
-	"FaisalBudiono/go-boilerplate/internal/domain"
-)
+import "FaisalBudiono/go-boilerplate/internal/app/domain"
 
 type user struct {
 	ID          string   `json:"id"`

@@ -1,7 +1,7 @@
 package ctr
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/auth"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/http/res"
 	"FaisalBudiono/go-boilerplate/internal/http/res/errcode"
 	"FaisalBudiono/go-boilerplate/internal/otel"

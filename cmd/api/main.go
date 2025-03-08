@@ -1,12 +1,12 @@
 package main
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/adapter/pg"
-	"FaisalBudiono/go-boilerplate/internal/app/auth"
-	"FaisalBudiono/go-boilerplate/internal/app/auth/jwt"
-	"FaisalBudiono/go-boilerplate/internal/app/hash"
-	"FaisalBudiono/go-boilerplate/internal/app/ht"
-	"FaisalBudiono/go-boilerplate/internal/app/product"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/pg"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
+	"FaisalBudiono/go-boilerplate/internal/app/core/product"
 	"FaisalBudiono/go-boilerplate/internal/db"
 	"FaisalBudiono/go-boilerplate/internal/env"
 	"FaisalBudiono/go-boilerplate/internal/http/ctr"
