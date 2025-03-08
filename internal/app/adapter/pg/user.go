@@ -3,7 +3,9 @@ package pg
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
+	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
 	"context"
+	"errors"
 
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/attribute"
@@ -24,16 +26,28 @@ type user struct {
 	password    string
 }
 
+type resultRoleMap struct {
+	res map[domid.UserID][]domain.Role
+	err error
+}
+
 func (repo *userRepo) FindByID(ctx context.Context, tx domain.DBTX, id domid.UserID) (domain.User, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByID users")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.id", string(id)))
+	ctx, cancel := context.WithCancelCause(ctx)
 
-	u := user{}
-	err := tx.QueryRowContext(
-		ctx,
-		`
+	chanRoleRes := make(chan resultRoleMap, 0)
+	go func() {
+		rMap, err := repo.r.ByUserIDs(ctx, tx, []domid.UserID{id})
+		if err != nil {
+			cancel(err)
+		}
+
+		chanRoleRes <- resultRoleMap{rMap, err}
+	}()
+
+	q := `
 SELECT
     id,
     name,
@@ -45,17 +59,28 @@ FROM
 WHERE
     id = $1
 LIMIT
-    1;
-        `,
-		id,
-	).Scan(&u.id, &u.name, &u.email, &u.phoneNumber, &u.password)
+    1
+`
+
+	span.SetAttributes(
+		attribute.String("input.id", string(id)),
+		spanattr.Query(q),
+	)
+
+	u := user{}
+	err := tx.QueryRowContext(ctx, q, id).
+		Scan(&u.id, &u.name, &u.email, &u.phoneNumber, &u.password)
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return domain.User{}, context.Cause(ctx)
+		}
+
 		return domain.User{}, tracerr.Wrap(err)
 	}
 
-	roles, err := repo.r.RefetchedRoles(ctx, tx, domid.UserID(u.id))
-	if err != nil {
-		return domain.User{}, err
+	resRoleMap := <-chanRoleRes
+	if resRoleMap.err != nil {
+		return domain.User{}, resRoleMap.err
 	}
 
 	return domain.NewUser(
@@ -64,7 +89,7 @@ LIMIT
 		u.phoneNumber,
 		u.email,
 		u.password,
-		roles,
+		resRoleMap.res[domid.UserID(u.id)],
 	), nil
 }
 
