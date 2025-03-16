@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/spf13/viper"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
@@ -35,7 +34,7 @@ func main() {
 		}
 	}()
 
-	appName := viper.GetString("APP_NAME")
+	appName := env.Get().AppName
 	tracer := otel.NewTracer(appName)
 	logger := otel.NewLogger(appName)
 
@@ -49,10 +48,10 @@ func main() {
 	argonHasher := hash.NewArgon()
 
 	jwtUserSigner := jwt.NewUserSigner(
-		[]byte(viper.GetString("JWT_SECRET")),
-		time.Second*time.Duration(viper.GetInt("JWT_TTL_SECOND")),
+		[]byte(env.Get().JwtSecret),
+		time.Second*time.Duration(env.Get().JwtTTLSecond),
 	)
-	refreshTokenSigner := jwt.NewRefreshTokenSigner([]byte(viper.GetString("JWT_REFRESH_SECRET")))
+	refreshTokenSigner := jwt.NewRefreshTokenSigner([]byte(env.Get().JwtRefreshSecret))
 
 	healthSrv := ht.New(dbconn, tracer, logger)
 

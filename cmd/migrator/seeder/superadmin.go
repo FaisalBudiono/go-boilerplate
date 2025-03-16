@@ -1,13 +1,13 @@
 package seeder
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
 	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
 	"database/sql"
 	"errors"
 
-	"github.com/spf13/viper"
 	"github.com/ztrue/tracerr"
 )
 
@@ -22,7 +22,7 @@ func (r *superAdmin) Name() string {
 
 func (r *superAdmin) Seed() error {
 	hasher := hash.NewArgon()
-	password, err := hasher.Generate(viper.GetString("SEEDER_FIRST_ADMIN_PASSWORD"))
+	password, err := hasher.Generate(env.Get().SeederFirstAdminPassword)
 	if err != nil {
 		return err
 	}
@@ -42,9 +42,9 @@ WHERE
     id = 1
 RETURNING id
 `,
-		viper.GetString("SEEDER_FIRST_ADMIN_NAME"),
-		viper.GetString("SEEDER_FIRST_ADMIN_EMAIL"),
-		viper.GetString("SEEDER_FIRST_ADMIN_PHONE_NUMBER"),
+		env.Get().SeederFirstAdminName,
+		env.Get().SeederFirstAdminEmail,
+		env.Get().SeederFirstAdminPhoneNumber,
 		password,
 	).Scan(&foundId)
 	if err != nil {
@@ -85,7 +85,7 @@ LIMIT 1
 
 func (r *superAdmin) insertUser() error {
 	hasher := hash.NewArgon()
-	password, err := hasher.Generate(viper.GetString("SEEDER_FIRST_ADMIN_PASSWORD"))
+	password, err := hasher.Generate(env.Get().SeederFirstAdminPassword)
 	if err != nil {
 		return err
 	}
@@ -98,9 +98,9 @@ INSERT INTO
 VALUES
     (1, $1, $2, $3, $4, NULL)
 `,
-		viper.GetString("SEEDER_FIRST_ADMIN_NAME"),
-		viper.GetString("SEEDER_FIRST_ADMIN_EMAIL"),
-		viper.GetString("SEEDER_FIRST_ADMIN_PHONE_NUMBER"),
+		env.Get().SeederFirstAdminName,
+		env.Get().SeederFirstAdminEmail,
+		env.Get().SeederFirstAdminPhoneNumber,
 		password,
 	)
 
