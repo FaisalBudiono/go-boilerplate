@@ -1,12 +1,12 @@
 package db
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
 	"database/sql"
 	"fmt"
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 )
 
 func PostgresConn() *sql.DB {
@@ -15,12 +15,12 @@ func PostgresConn() *sql.DB {
 
 func makeConnectionPostgres() *sql.DB {
 	source := makePostgresDSN(
-		viper.GetString("POSTGRES_USER"),
-		viper.GetString("POSTGRES_PASSWORD"),
-		viper.GetString("POSTGRES_HOST"),
-		viper.GetString("POSTGRES_PORT"),
-		viper.GetString("POSTGRES_DB_NAME"),
-		viper.GetString("POSTGRES_SSL_MODE"),
+		env.Get().PgUser,
+		env.Get().PgPassword,
+		env.Get().PgHost,
+		env.Get().PgPort,
+		env.Get().PgDBName,
+		env.Get().PgSSLMode,
 	)
 
 	db, err := sql.Open("postgres", source)
@@ -43,4 +43,3 @@ func makePostgresDSN(
 		user, password, host, port, dbName, sslMode,
 	)
 }
-

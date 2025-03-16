@@ -1,13 +1,13 @@
 package otel
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
 	"context"
 	"errors"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
@@ -112,8 +112,8 @@ func newConfig(
 ) (*config, error) {
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(viper.GetString("APP_NAME")),
-			semconv.ServiceVersion(viper.GetString("APP_VERSION")),
+			semconv.ServiceName(env.Get().AppName),
+			semconv.ServiceVersion(env.Get().AppVersion),
 		))
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func (c *config) newTraceProvider() (*trace.TracerProvider, error) {
 }
 
 func (c *config) newTraceExporter() (trace.SpanExporter, error) {
-	endpoint := viper.GetString("OTLP_ENDPOINT")
+	endpoint := env.Get().OtelEndpoint
 
 	if endpoint == "" {
 		return stdouttrace.New(
@@ -182,7 +182,7 @@ func (c *config) newMeterProvider() (*metric.MeterProvider, error) {
 }
 
 func (c *config) newMetricExporter() (metric.Exporter, error) {
-	endpoint := viper.GetString("OTLP_ENDPOINT")
+	endpoint := env.Get().OtelEndpoint
 
 	if endpoint == "" {
 		return stdoutmetric.New()
@@ -209,7 +209,7 @@ func (c *config) newLoggerProvider() (*log.LoggerProvider, error) {
 }
 
 func (c *config) newLogExporter() (log.Exporter, error) {
-	endpoint := viper.GetString("OTLP_ENDPOINT")
+	endpoint := env.Get().OtelEndpoint
 
 	if endpoint == "" {
 		return stdoutlog.New(
