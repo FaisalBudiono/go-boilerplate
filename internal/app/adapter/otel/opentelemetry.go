@@ -1,7 +1,7 @@
 package otel
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/env"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"context"
 	"errors"
 	"os"
@@ -112,8 +112,8 @@ func newConfig(
 ) (*config, error) {
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
-			semconv.ServiceName(env.Get().AppName),
-			semconv.ServiceVersion(env.AppVersion()),
+			semconv.ServiceName(app.ENV().AppName),
+			semconv.ServiceVersion(app.Version()),
 		))
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func (c *config) newTraceProvider() (*trace.TracerProvider, error) {
 }
 
 func (c *config) newTraceExporter() (trace.SpanExporter, error) {
-	endpoint := env.Get().OtelEndpoint
+	endpoint := app.ENV().OtelEndpoint
 
 	if endpoint == "" {
 		return stdouttrace.New(
@@ -182,7 +182,7 @@ func (c *config) newMeterProvider() (*metric.MeterProvider, error) {
 }
 
 func (c *config) newMetricExporter() (metric.Exporter, error) {
-	endpoint := env.Get().OtelEndpoint
+	endpoint := app.ENV().OtelEndpoint
 
 	if endpoint == "" {
 		return stdoutmetric.New()
@@ -209,7 +209,7 @@ func (c *config) newLoggerProvider() (*log.LoggerProvider, error) {
 }
 
 func (c *config) newLogExporter() (log.Exporter, error) {
-	endpoint := env.Get().OtelEndpoint
+	endpoint := app.ENV().OtelEndpoint
 
 	if endpoint == "" {
 		return stdoutlog.New(

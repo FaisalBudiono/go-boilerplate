@@ -1,7 +1,7 @@
 package db
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/env"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"database/sql"
 	"fmt"
 	"time"
@@ -15,12 +15,12 @@ func PostgresConn() *sql.DB {
 
 func makeConnectionPostgres() *sql.DB {
 	source := makePostgresDSN(
-		env.Get().PgUser,
-		env.Get().PgPassword,
-		env.Get().PgHost,
-		env.Get().PgPort,
-		env.Get().PgDBName,
-		env.Get().PgSSLMode,
+		app.ENV().PgUser,
+		app.ENV().PgPassword,
+		app.ENV().PgHost,
+		app.ENV().PgPort,
+		app.ENV().PgDBName,
+		app.ENV().PgSSLMode,
 	)
 
 	db, err := sql.Open("postgres", source)
