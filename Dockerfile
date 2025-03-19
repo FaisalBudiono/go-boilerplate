@@ -17,7 +17,6 @@ FROM alpine:3.10 AS api
 USER 1000
 WORKDIR /app
 RUN mkdir logs
-RUN touch .env
 COPY db /app/db
 COPY --from=base /usr/local/go/lib/time/zoneinfo.zip /
 ENV ZONEINFO=/zoneinfo.zip
