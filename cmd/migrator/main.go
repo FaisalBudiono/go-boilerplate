@@ -2,7 +2,7 @@ package main
 
 import (
 	"FaisalBudiono/go-boilerplate/cmd/migrator/cmd"
-	"FaisalBudiono/go-boilerplate/internal/app/util/env"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"fmt"
 	"os"
 )
@@ -12,7 +12,7 @@ const (
 )
 
 func main() {
-	env.Bind()
+	app.BindENV()
 
 	args := os.Args
 	if len(args) == 1 {

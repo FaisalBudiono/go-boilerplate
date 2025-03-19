@@ -2,8 +2,8 @@ package seeder
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/util/env"
 	"context"
 	"database/sql"
 	"errors"
@@ -22,7 +22,7 @@ func (r *superAdmin) Name() string {
 
 func (r *superAdmin) Seed() error {
 	hasher := hash.NewArgon()
-	password, err := hasher.Generate(env.Get().SeederFirstAdminPassword)
+	password, err := hasher.Generate(app.ENV().SeederFirstAdminPassword)
 	if err != nil {
 		return err
 	}
@@ -42,9 +42,9 @@ WHERE
     id = 1
 RETURNING id
 `,
-		env.Get().SeederFirstAdminName,
-		env.Get().SeederFirstAdminEmail,
-		env.Get().SeederFirstAdminPhoneNumber,
+		app.ENV().SeederFirstAdminName,
+		app.ENV().SeederFirstAdminEmail,
+		app.ENV().SeederFirstAdminPhoneNumber,
 		password,
 	).Scan(&foundId)
 	if err != nil {
@@ -85,7 +85,7 @@ LIMIT 1
 
 func (r *superAdmin) insertUser() error {
 	hasher := hash.NewArgon()
-	password, err := hasher.Generate(env.Get().SeederFirstAdminPassword)
+	password, err := hasher.Generate(app.ENV().SeederFirstAdminPassword)
 	if err != nil {
 		return err
 	}
@@ -98,9 +98,9 @@ INSERT INTO
 VALUES
     (1, $1, $2, $3, $4, NULL)
 `,
-		env.Get().SeederFirstAdminName,
-		env.Get().SeederFirstAdminEmail,
-		env.Get().SeederFirstAdminPhoneNumber,
+		app.ENV().SeederFirstAdminName,
+		app.ENV().SeederFirstAdminEmail,
+		app.ENV().SeederFirstAdminPhoneNumber,
 		password,
 	)
 

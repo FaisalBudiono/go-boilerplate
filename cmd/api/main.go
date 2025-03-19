@@ -10,7 +10,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
 	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
-	"FaisalBudiono/go-boilerplate/internal/app/util/env"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"context"
 	"time"
 
@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	env.Bind()
+	app.BindENV()
 
 	ctx := context.Background()
 
@@ -34,9 +34,8 @@ func main() {
 		}
 	}()
 
-	appName := env.Get().AppName
-	tracer := otel.NewTracer(appName)
-	logger := otel.NewLogger(appName)
+	tracer := otel.NewTracer(app.ENV().AppName)
+	logger := otel.NewLogger(app.ENV().AppName)
 
 	dbconn := db.PostgresConn()
 
@@ -48,10 +47,10 @@ func main() {
 	argonHasher := hash.NewArgon()
 
 	jwtUserSigner := jwt.NewUserSigner(
-		[]byte(env.Get().JwtSecret),
-		time.Second*time.Duration(env.Get().JwtTTLSecond),
+		[]byte(app.ENV().JwtSecret),
+		time.Second*time.Duration(app.ENV().JwtTTLSecond),
 	)
-	refreshTokenSigner := jwt.NewRefreshTokenSigner([]byte(env.Get().JwtRefreshSecret))
+	refreshTokenSigner := jwt.NewRefreshTokenSigner([]byte(app.ENV().JwtRefreshSecret))
 
 	healthSrv := ht.New(dbconn, tracer, logger)
 
@@ -74,7 +73,7 @@ func main() {
 	)
 
 	e := echo.New()
-	e.Use(otelecho.Middleware(appName))
+	e.Use(otelecho.Middleware(app.ENV().AppName))
 
 	e.POST("/auths/login", ctr.AuthLogin(tracer, authSrv))
 	e.POST("/auths/logout", ctr.AuthLogout(tracer, authSrv))

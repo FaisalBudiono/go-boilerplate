@@ -1,10 +1,10 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
-	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
-	"FaisalBudiono/go-boilerplate/internal/app/util/queryutil"
 	"context"
 	"fmt"
 

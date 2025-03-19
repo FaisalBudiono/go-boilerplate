@@ -4,7 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res/errcode"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
-	"FaisalBudiono/go-boilerplate/internal/app/util/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"context"
 	"encoding/json"
 	"errors"

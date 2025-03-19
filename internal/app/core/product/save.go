@@ -1,8 +1,8 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
 	"context"
 	"slices"
 	"strings"

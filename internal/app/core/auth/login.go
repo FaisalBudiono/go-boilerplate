@@ -1,8 +1,8 @@
 package auth
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/rnd"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/util/rnd"
 	"context"
 	"database/sql"
 	"errors"

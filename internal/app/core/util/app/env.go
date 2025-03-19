@@ -1,4 +1,4 @@
-package env
+package app
 
 import (
 	"errors"
@@ -8,9 +8,8 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type spec struct {
-	AppName    string `envconfig:"APP_NAME" default:"go-boilerplate"`
-	AppVersion string `envconfig:"APP_VERSION" default:"0.1.0"`
+type envConfig struct {
+	AppName string `envconfig:"APP_NAME" default:"go-boilerplate"`
 
 	OtelEndpoint string `envconfig:"OTLP_ENDPOINT" required:"false"`
 
@@ -31,24 +30,24 @@ type spec struct {
 	SeederFirstAdminPhoneNumber string `envconfig:"SEEDER_FIRST_ADMIN_PHONE_NUMBER" required:"false" desc:"Phone Number for superadmin (first user)"`
 }
 
-var s spec
+var env envConfig
 
-func Bind() {
+func BindENV() {
 	bindDotENV()
 
-	err := envconfig.Process("", &s)
+	err := envconfig.Process("", &env)
 	if err != nil {
 		printSpecUsage()
 		panic(err)
 	}
 }
 
-func Get() spec {
-	return s
+func ENV() envConfig {
+	return env
 }
 
 func printSpecUsage() {
-	err := envconfig.Usage("", &s)
+	err := envconfig.Usage("", &env)
 	if err != nil {
 		panic(err)
 	}
