@@ -2,8 +2,8 @@ package seeder
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/env"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/util/env"
 	"context"
 	"database/sql"
 	"errors"

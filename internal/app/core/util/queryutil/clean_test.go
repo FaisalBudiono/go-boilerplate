@@ -1,7 +1,7 @@
 package queryutil_test
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/util/queryutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"fmt"
 	"testing"
 

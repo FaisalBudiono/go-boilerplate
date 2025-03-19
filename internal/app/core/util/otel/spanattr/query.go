@@ -1,7 +1,7 @@
 package spanattr
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/util/queryutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 
 	"go.opentelemetry.io/otel/attribute"
 )

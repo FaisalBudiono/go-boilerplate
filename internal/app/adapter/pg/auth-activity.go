@@ -1,9 +1,9 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
-	"FaisalBudiono/go-boilerplate/internal/app/util/otel/spanattr"
 	"context"
 	"time"
 

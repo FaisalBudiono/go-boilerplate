@@ -10,7 +10,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
 	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
-	"FaisalBudiono/go-boilerplate/internal/app/util/env"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/env"
 	"context"
 	"time"
 
