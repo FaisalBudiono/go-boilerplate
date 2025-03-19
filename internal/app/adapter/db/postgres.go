@@ -1,7 +1,7 @@
 package db
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
+	"FaisalBudiono/go-boilerplate/internal/app/util/env"
 	"database/sql"
 	"fmt"
 	"time"

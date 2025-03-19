@@ -2,7 +2,6 @@ package main
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/db"
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/ctr"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/pg"
@@ -11,6 +10,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
 	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
+	"FaisalBudiono/go-boilerplate/internal/app/util/env"
 	"context"
 	"time"
 

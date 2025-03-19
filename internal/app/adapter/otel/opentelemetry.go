@@ -1,7 +1,7 @@
 package otel
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
+	"FaisalBudiono/go-boilerplate/internal/app/util/env"
 	"context"
 	"errors"
 	"os"
