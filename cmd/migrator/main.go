@@ -2,7 +2,7 @@ package main
 
 import (
 	"FaisalBudiono/go-boilerplate/cmd/migrator/cmd"
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/env"
+	"FaisalBudiono/go-boilerplate/internal/app/util/env"
 	"fmt"
 	"os"
 )
