@@ -58,4 +58,3 @@ func (g *gooseMigrator) Down() {
 		panic(err)
 	}
 }
-
