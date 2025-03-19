@@ -113,7 +113,7 @@ func newConfig(
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
 			semconv.ServiceName(env.Get().AppName),
-			semconv.ServiceVersion(env.Get().AppVersion),
+			semconv.ServiceVersion(env.AppVersion()),
 		))
 	if err != nil {
 		return nil, err

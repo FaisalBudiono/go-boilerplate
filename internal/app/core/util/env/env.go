@@ -9,8 +9,7 @@ import (
 )
 
 type spec struct {
-	AppName    string `envconfig:"APP_NAME" default:"go-boilerplate"`
-	AppVersion string `envconfig:"APP_VERSION" default:"0.1.0"`
+	AppName string `envconfig:"APP_NAME" default:"go-boilerplate"`
 
 	OtelEndpoint string `envconfig:"OTLP_ENDPOINT" required:"false"`
 
@@ -32,6 +31,10 @@ type spec struct {
 }
 
 var s spec
+
+func AppVersion() string {
+	return "v0.1.0"
+}
 
 func Bind() {
 	bindDotENV()
