@@ -1,4 +1,4 @@
-FROM golang:1.23.3-alpine AS base
+FROM golang:1.23.3 AS base
 
 FROM base AS deps
 WORKDIR /app
@@ -19,6 +19,8 @@ WORKDIR /app
 RUN mkdir logs
 RUN touch .env
 COPY db /app/db
+COPY --from=base /usr/local/go/lib/time/zoneinfo.zip /
+ENV ZONEINFO=/zoneinfo.zip
 COPY --from=builder-api /app/api /app/api
 COPY --from=builder-migrator /app/migrator /app/migrator
 CMD ["/app/api"]
