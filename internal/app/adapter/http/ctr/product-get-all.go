@@ -83,7 +83,7 @@ func (r *reqGetAllProduct) PerPage() int64 {
 	return r.perPage
 }
 
-func (r *reqGetAllProduct) ShowAllFlag() bool {
+func (r *reqGetAllProduct) CMSAcces() bool {
 	return r.showAllFlag
 }
 

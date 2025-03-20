@@ -15,7 +15,7 @@ type inputGetAll interface {
 	Page() int64
 	PerPage() int64
 
-	ShowAllFlag() bool
+	CMSAcces() bool
 }
 
 func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination, error) {
@@ -25,11 +25,11 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 	actor := req.Actor()
 	page := req.Page()
 	perPage := req.PerPage()
-	showAll := req.ShowAllFlag()
+	showAll := req.CMSAcces()
 
 	span.SetAttributes(attribute.Int64("input.page", page))
 	span.SetAttributes(attribute.Int64("input.perPage", perPage))
-	span.SetAttributes(attribute.Bool("input.showAllFlag", showAll))
+	span.SetAttributes(attribute.Bool("input.cmsAccess", showAll))
 
 	if page < 1 {
 		page = 1
