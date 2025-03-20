@@ -57,7 +57,7 @@ func (r *reqGetAllProduct) Bind(c echo.Context) error {
 	}
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessableVerbose(errMsgs)
+		return res.NewErrorUnprocessable(errMsgs)
 	}
 
 	r.page = page

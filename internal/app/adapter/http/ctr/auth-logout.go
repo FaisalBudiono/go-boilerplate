@@ -47,7 +47,7 @@ func (r *reqAuthLogout) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessableVerbose(errMsgs)
+		return res.NewErrorUnprocessable(errMsgs)
 	}
 
 	return nil

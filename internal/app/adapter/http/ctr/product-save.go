@@ -56,7 +56,7 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessableVerbose(errMsgs)
+		return res.NewErrorUnprocessable(errMsgs)
 	}
 
 	r.priceInCents = r.BodyPrice * 100
