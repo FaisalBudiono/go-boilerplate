@@ -12,7 +12,7 @@ type product struct {
 	PublishedAt *string `json:"publishedAt"`
 }
 
-func ToProduct(p domain.Product) response[product] {
+func Product(p domain.Product) response[product] {
 	var pubAt *string
 	if p.PublishedAt != nil {
 		f := p.PublishedAt.Format(time.RFC3339Nano)
@@ -29,7 +29,7 @@ func ToProduct(p domain.Product) response[product] {
 	}
 }
 
-func ToProductPaginated(ps []domain.Product, pg domain.Pagination) responsePaginated[product] {
+func ProductPaginated(ps []domain.Product, pg domain.Pagination) responsePaginated[product] {
 	resProducts := make([]product, len(ps))
 	for i, p := range ps {
 		resProducts[i] = toProductRes(p)

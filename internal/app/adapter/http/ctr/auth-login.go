@@ -100,6 +100,6 @@ func AuthLogin(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.ToAuth(token))
+		return c.JSON(http.StatusOK, res.Auth(token))
 	}
 }

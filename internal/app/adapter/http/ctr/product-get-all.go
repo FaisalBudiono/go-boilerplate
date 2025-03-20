@@ -142,6 +142,6 @@ func GetAllProduct(
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.ToProductPaginated(ps, pg))
+		return c.JSON(http.StatusOK, res.ProductPaginated(ps, pg))
 	}
 }

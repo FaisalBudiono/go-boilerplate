@@ -85,6 +85,6 @@ func GetProduct(
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.ToProduct(p))
+		return c.JSON(http.StatusOK, res.Product(p))
 	}
 }

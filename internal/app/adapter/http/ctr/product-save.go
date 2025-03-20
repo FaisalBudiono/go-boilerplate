@@ -140,6 +140,6 @@ func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) 
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusCreated, res.ToProduct(p))
+		return c.JSON(http.StatusCreated, res.Product(p))
 	}
 }
