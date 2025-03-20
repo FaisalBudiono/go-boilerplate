@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/XSAM/otelsql"
 	_ "github.com/lib/pq"
 )
 
@@ -23,7 +24,9 @@ func makeConnectionPostgres() *sql.DB {
 		app.ENV().PgSSLMode,
 	)
 
-	db, err := sql.Open("postgres", source)
+	db, err := otelsql.Open("postgres", source,
+		otelsql.WithAttributes(otelsql.AttributesFromDSN(source)...),
+	)
 	if err != nil {
 		panic(err)
 	}
