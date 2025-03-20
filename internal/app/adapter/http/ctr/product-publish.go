@@ -136,6 +136,6 @@ func PublishProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Produc
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.ToProduct(p))
+		return c.JSON(http.StatusOK, res.Product(p))
 	}
 }

@@ -2,15 +2,15 @@ package res
 
 import "FaisalBudiono/go-boilerplate/internal/app/domain"
 
-type Auth struct {
+type auth struct {
 	Type         string `json:"type"`
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 }
 
-func ToAuth(token domain.Token) response[Auth] {
-	return response[Auth]{
-		Data: Auth{
+func Auth(token domain.Token) response[auth] {
+	return response[auth]{
+		Data: auth{
 			Type:         "Bearer",
 			AccessToken:  token.AccessToken,
 			RefreshToken: token.RefreshToken,

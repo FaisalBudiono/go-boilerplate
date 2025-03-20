@@ -32,6 +32,6 @@ func Userinfo(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.ToUser(u))
+		return c.JSON(http.StatusOK, res.User(u))
 	}
 }

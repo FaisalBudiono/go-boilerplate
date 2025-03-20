@@ -10,7 +10,7 @@ type user struct {
 	Roles       []string `json:"roles"`
 }
 
-func ToUser(u domain.User) response[user] {
+func User(u domain.User) response[user] {
 	roles := make([]string, len(u.Roles))
 	for i, r := range u.Roles {
 		roles[i] = string(r)
