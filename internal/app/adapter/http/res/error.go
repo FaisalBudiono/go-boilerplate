@@ -85,27 +85,7 @@ func (e *UnprocessableErrResponse) Error() string {
 	return "Invalid param request"
 }
 
-func NewErrorUnprocessable(meta map[string][]string) *UnprocessableErrResponse {
-	metaMap := make(map[string][]verboseMetaErr, 0)
-
-	for k, codes := range meta {
-		for _, c := range codes {
-			metaMap[k] = append(metaMap[k], verboseMetaErr{
-				Code: c,
-			})
-		}
-	}
-
-	return &UnprocessableErrResponse{
-		errResponse: errResponse{
-			Msg:     "Structure body/param might be invalid.",
-			ErrCode: errcode.InvalidParam,
-		},
-		Meta: metaMap,
-	}
-}
-
-func NewErrorUnprocessableVerbose(meta VerboseMetaMsgs) *UnprocessableErrResponse {
+func NewErrorUnprocessable(meta VerboseMetaMsgs) *UnprocessableErrResponse {
 	return &UnprocessableErrResponse{
 		errResponse: errResponse{
 			Msg:     "Structure body/param might be invalid.",
