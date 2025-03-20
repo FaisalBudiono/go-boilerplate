@@ -5,70 +5,61 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type reqSaveProduct struct {
+	tracer trace.Tracer
+
 	ctx          context.Context
 	actor        domain.User
 	priceInCents int64
 
-	BodyName  string      `json:"name" validate:"required"`
-	BodyPrice json.Number `json:"price"`
+	BodyName  string `json:"name" validate:"required"`
+	BodyPrice int64  `json:"price"`
 }
 
 func (r *reqSaveProduct) Bind(c echo.Context) error {
-	msgs := make(map[string][]string, 0)
+	_, span := r.tracer.Start(r.ctx, "req: create product")
+	defer span.End()
 
-	err := c.Bind(r)
+	errMsgs := make(res.VerboseMetaMsgs, 0)
+
+	validationErr, err := httputil.Bind(r, map[string]string{
+		"name":  "string",
+		"price": "integer",
+	}, c)
 	if err != nil {
-		var jsonErr *json.UnmarshalTypeError
-		if !errors.As(err, &jsonErr) {
-			return tracerr.Wrap(err)
-		}
-
-		if jsonErr.Field == "name" {
-			msgs["name"] = append(msgs["name"], "string")
-		}
-		if jsonErr.Field == "price" {
-			msgs["price"] = append(msgs["price"], "number")
-		}
+		otel.SpanLogError(span, err, "failed to bind")
+		return err
 	}
+	errMsgs.AppendDomMap(validationErr)
 
-	err = validator.New().StructCtx(r.ctx, r)
+	validationErr, err = httputil.ValidateStruct(r, map[string]string{
+		"BodyName":  "name",
+		"BodyPrice": "price",
+	})
 	if err != nil {
-		var valErr validator.ValidationErrors
-		if !errors.As(err, &valErr) {
-			return tracerr.Wrap(err)
-		}
+		otel.SpanLogError(span, err, "unhandled validator error")
 
-		for _, fe := range valErr {
-			if fe.Field() == "BodyName" {
-				msgs["name"] = append(msgs["name"], fe.Tag())
-			}
-		}
+		return err
+	}
+	errMsgs.AppendDomMap(validationErr)
+
+	if len(errMsgs) > 0 {
+		return res.NewErrorUnprocessableVerbose(errMsgs)
 	}
 
-	price, err := r.BodyPrice.Int64()
-	if err != nil {
-		msgs["price"] = append(msgs["price"], "number")
-	}
-	r.priceInCents = price * 100
-
-	if len(msgs) > 0 {
-		return res.NewErrorUnprocessable(msgs)
-	}
+	r.priceInCents = r.BodyPrice * 100
 
 	return nil
 }
@@ -109,8 +100,9 @@ func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) 
 		}
 
 		input := &reqSaveProduct{
-			ctx:   ctx,
-			actor: u,
+			tracer: tracer,
+			ctx:    ctx,
+			actor:  u,
 		}
 
 		err = input.Bind(c)

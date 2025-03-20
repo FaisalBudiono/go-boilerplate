@@ -44,7 +44,7 @@ func (v VerboseMetaMsgs) Append(key string, vErr ...verboseMetaErr) VerboseMetaM
 	return v
 }
 
-func (v VerboseMetaMsgs) AppendV(key string, err ...domain.VerboseError) VerboseMetaMsgs {
+func (v VerboseMetaMsgs) AppendDom(key string, err ...domain.VerboseError) VerboseMetaMsgs {
 	items := make([]verboseMetaErr, len(err))
 	for i := range err {
 		domErr := err[i]
@@ -57,11 +57,11 @@ func (v VerboseMetaMsgs) AppendV(key string, err ...domain.VerboseError) Verbose
 	return v
 }
 
-func (v VerboseMetaMsgs) AppendVMap(mapErr map[string][]domain.VerboseError) VerboseMetaMsgs {
+func (v VerboseMetaMsgs) AppendDomMap(mapErr map[string][]domain.VerboseError) VerboseMetaMsgs {
 	for key := range mapErr {
 		vErrs := mapErr[key]
 
-		v.AppendV(key, vErrs...)
+		v.AppendDom(key, vErrs...)
 	}
 
 	return v

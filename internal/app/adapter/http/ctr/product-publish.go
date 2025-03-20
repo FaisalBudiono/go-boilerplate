@@ -5,22 +5,23 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type reqPublishProduct struct {
-	ctx       context.Context
+	tracer trace.Tracer
+
+	ctx context.Context
+
 	actor     domain.User
 	productID string
 	isPublish bool
@@ -29,36 +30,31 @@ type reqPublishProduct struct {
 }
 
 func (r *reqPublishProduct) Bind(c echo.Context) error {
-	msgs := make(map[string][]string, 0)
+	_, span := r.tracer.Start(r.ctx, "req: publish product")
+	defer span.End()
 
-	err := c.Bind(r)
+	errMsgs := make(res.VerboseMetaMsgs, 0)
+
+	validationErr, err := httputil.Bind(r, map[string]string{
+		"isPublish": "boolean",
+	}, c)
 	if err != nil {
-		var jsonErr *json.UnmarshalTypeError
-		if !errors.As(err, &jsonErr) {
-			return tracerr.Wrap(err)
-		}
-
-		if jsonErr.Field == "isPublish" {
-			msgs["isPublish"] = append(msgs["isPublish"], "boolean")
-		}
+		otel.SpanLogError(span, err, "failed to bind")
+		return err
 	}
+	errMsgs.AppendDomMap(validationErr)
 
-	err = validator.New().StructCtx(r.ctx, r)
+	validationErr, err = httputil.ValidateStruct(r, map[string]string{
+		"BodyIsPublish": "isPublish",
+	})
 	if err != nil {
-		var valErr validator.ValidationErrors
-		if !errors.As(err, &valErr) {
-			return tracerr.Wrap(err)
-		}
-
-		for _, fe := range valErr {
-			if fe.Field() == "BodyIsPublish" {
-				msgs["isPublish"] = append(msgs["isPublish"], fe.Tag())
-			}
-		}
+		otel.SpanLogError(span, err, "unhandled validator error")
+		return err
 	}
+	errMsgs.AppendDomMap(validationErr)
 
-	if len(msgs) > 0 {
-		return res.NewErrorUnprocessable(msgs)
+	if len(errMsgs) > 0 {
+		return res.NewErrorUnprocessableVerbose(errMsgs)
 	}
 
 	r.isPublish = *r.BodyIsPublish
@@ -105,6 +101,7 @@ func PublishProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Produc
 		}
 
 		i := &reqPublishProduct{
+			tracer:    tracer,
 			ctx:       ctx,
 			productID: c.Param("productID"),
 			actor:     u,
