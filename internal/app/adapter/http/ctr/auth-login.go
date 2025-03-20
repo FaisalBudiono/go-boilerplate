@@ -2,9 +2,9 @@ package ctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res/errcode"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
 	"encoding/json"
 	"errors"

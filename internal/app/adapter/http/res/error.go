@@ -1,6 +1,9 @@
 package res
 
-import "FaisalBudiono/go-boilerplate/internal/app/adapter/http/res/errcode"
+import (
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
+)
 
 type errResponse struct {
 	Msg     string       `json:"message"`
@@ -21,14 +24,61 @@ func NewError(msg string, code errcode.Code) errResponse {
 	}
 }
 
-type metaErr struct {
+type verboseMetaErr struct {
 	Code string `json:"code"`
+	Msg  string `json:"message,omitempty"`
+}
+
+func NewVerboseMeta(code string, msg string) verboseMetaErr {
+	return verboseMetaErr{
+		Code: code,
+		Msg:  msg,
+	}
+}
+
+type VerboseMetaMsgs map[string][]verboseMetaErr
+
+func (v VerboseMetaMsgs) Append(key string, vErr ...verboseMetaErr) VerboseMetaMsgs {
+	v[key] = append(v[key], vErr...)
+
+	return v
+}
+
+func (v VerboseMetaMsgs) AppendV(key string, err ...domain.VerboseError) VerboseMetaMsgs {
+	items := make([]verboseMetaErr, len(err))
+	for i := range err {
+		domErr := err[i]
+
+		items[i] = NewVerboseMeta(string(domErr.Code), domErr.Message)
+	}
+
+	v.Append(key, items...)
+
+	return v
+}
+
+func (v VerboseMetaMsgs) AppendVMap(mapErr map[string][]domain.VerboseError) VerboseMetaMsgs {
+	for key := range mapErr {
+		vErrs := mapErr[key]
+
+		v.AppendV(key, vErrs...)
+	}
+
+	return v
+}
+
+func (v VerboseMetaMsgs) AppendVList(e domain.VerboseErrorList) VerboseMetaMsgs {
+	for _, eVal := range e {
+		v.Append(eVal.FieldName, NewVerboseMeta(string(eVal.Err.Code), eVal.Err.Message))
+	}
+
+	return v
 }
 
 type UnprocessableErrResponse struct {
 	errResponse
 
-	Meta map[string][]metaErr `json:"meta"`
+	Meta VerboseMetaMsgs `json:"meta"`
 }
 
 func (e *UnprocessableErrResponse) Error() string {
@@ -36,11 +86,11 @@ func (e *UnprocessableErrResponse) Error() string {
 }
 
 func NewErrorUnprocessable(meta map[string][]string) *UnprocessableErrResponse {
-	metaMap := make(map[string][]metaErr, 0)
+	metaMap := make(map[string][]verboseMetaErr, 0)
 
 	for k, codes := range meta {
 		for _, c := range codes {
-			metaMap[k] = append(metaMap[k], metaErr{
+			metaMap[k] = append(metaMap[k], verboseMetaErr{
 				Code: c,
 			})
 		}
@@ -52,5 +102,15 @@ func NewErrorUnprocessable(meta map[string][]string) *UnprocessableErrResponse {
 			ErrCode: errcode.InvalidParam,
 		},
 		Meta: metaMap,
+	}
+}
+
+func NewErrorUnprocessableVerbose(meta VerboseMetaMsgs) *UnprocessableErrResponse {
+	return &UnprocessableErrResponse{
+		errResponse: errResponse{
+			Msg:     "Structure body/param might be invalid.",
+			ErrCode: errcode.InvalidParam,
+		},
+		Meta: meta,
 	}
 }
