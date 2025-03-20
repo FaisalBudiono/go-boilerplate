@@ -32,16 +32,18 @@ func (r *reqGetAllProduct) Bind(c echo.Context) error {
 	_, span := r.tracer.Start(r.ctx, "req: binding get all products")
 	defer span.End()
 
-	msgs := make(map[string][]string, 0)
+	errMsgs := make(res.VerboseMetaMsgs, 0)
 
 	rawPage := c.QueryParam("page")
 	if rawPage == "" {
 		rawPage = "0"
 	}
 
+	integerErr := res.NewVerboseMeta("integer", "")
+
 	page, err := strconv.ParseInt(rawPage, 10, 64)
 	if err != nil {
-		msgs["page"] = append(msgs["page"], "integer")
+		errMsgs.Append("page", integerErr)
 	}
 
 	rawPerPage := c.QueryParam("per_page")
@@ -51,11 +53,11 @@ func (r *reqGetAllProduct) Bind(c echo.Context) error {
 
 	perPage, err := strconv.ParseInt(rawPerPage, 10, 64)
 	if err != nil {
-		msgs["per_page"] = append(msgs["per_page"], "integer")
+		errMsgs.Append("per_page", integerErr)
 	}
 
-	if len(msgs) > 0 {
-		return res.NewErrorUnprocessable(msgs)
+	if len(errMsgs) > 0 {
+		return res.NewErrorUnprocessableVerbose(errMsgs)
 	}
 
 	r.page = page
