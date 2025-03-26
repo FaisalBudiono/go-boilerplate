@@ -28,10 +28,10 @@ func (r *reqAuthLogin) Bind(c echo.Context) error {
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
 
-	validationErr, err := httputil.Bind(r, map[string]string{
+	validationErr, err := httputil.Bind(c, r, map[string]string{
 		"email":    "string",
 		"password": "string",
-	}, c)
+	})
 	if err != nil {
 		otel.SpanLogError(span, err, "failed to bind")
 		return err
