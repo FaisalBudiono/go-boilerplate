@@ -5,6 +5,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"fmt"
 
@@ -17,7 +18,7 @@ type roleRepo struct {
 	tracer trace.Tracer
 }
 
-func (repo *roleRepo) ByUserIDs(ctx context.Context, tx domain.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
+func (repo *roleRepo) ByUserIDs(ctx context.Context, tx portout.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: refetched roles")
 	defer span.End()
 
@@ -75,7 +76,7 @@ ORDER BY
 	return rolesMap, nil
 }
 
-func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx domain.DBTX, id domid.UserID) ([]domain.Role, error) {
+func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx portout.DBTX, id domid.UserID) ([]domain.Role, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: refetched roles")
 	defer span.End()
 

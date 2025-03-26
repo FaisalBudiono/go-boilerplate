@@ -7,7 +7,7 @@ import (
 )
 
 type AuthActivityRepo interface {
-	DeleteByPayload(ctx context.Context, tx domain.DBTX, payload string) error
-	LastActivityByPayload(ctx context.Context, tx domain.DBTX, payload string) (domid.UserID, error)
-	Save(ctx context.Context, tx domain.DBTX, payload string, u domain.User) error
+	DeleteByPayload(ctx context.Context, tx DBTX, payload string) error
+	LastActivityByPayload(ctx context.Context, tx DBTX, payload string) (domid.UserID, error)
+	Save(ctx context.Context, tx DBTX, payload string, u domain.User) error
 }

@@ -4,6 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"fmt"
 	"strconv"
@@ -25,7 +26,7 @@ type product struct {
 	publishedAt *time.Time
 }
 
-func (repo *productRepo) GetAll(ctx context.Context, tx domain.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
+func (repo *productRepo) GetAll(ctx context.Context, tx portout.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: products get all")
 	defer span.End()
 
@@ -115,7 +116,7 @@ OFFSET $2
 	return products, total, nil
 }
 
-func (repo *productRepo) FindByID(ctx context.Context, tx domain.DBTX, id domid.ProductID) (domain.Product, error) {
+func (repo *productRepo) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByID products")
 	defer span.End()
 
@@ -153,7 +154,7 @@ LIMIT
 	), nil
 }
 
-func (repo *productRepo) Publish(ctx context.Context, tx domain.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
+func (repo *productRepo) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: publish products")
 	defer span.End()
 
@@ -190,7 +191,7 @@ WHERE
 	return p, nil
 }
 
-func (repo *productRepo) Save(ctx context.Context, tx domain.DBTX, name string, price int64) (domain.Product, error) {
+func (repo *productRepo) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: save products")
 	defer span.End()
 
