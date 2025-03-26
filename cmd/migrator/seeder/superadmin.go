@@ -4,6 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"database/sql"
 	"errors"
@@ -13,7 +14,7 @@ import (
 
 type superAdmin struct {
 	ctx context.Context
-	db  domain.DBTX
+	db  portout.DBTX
 }
 
 func (r *superAdmin) Name() string {
@@ -122,6 +123,6 @@ VALUES
 	return tracerr.Wrap(err)
 }
 
-func NewSuperAdmin(ctx context.Context, db domain.DBTX) *superAdmin {
+func NewSuperAdmin(ctx context.Context, db portout.DBTX) *superAdmin {
 	return &superAdmin{ctx, db}
 }

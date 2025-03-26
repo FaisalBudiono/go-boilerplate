@@ -7,6 +7,6 @@ import (
 )
 
 type UserRepo interface {
-	FindByEmail(ctx context.Context, tx domain.DBTX, email string) (domain.User, error)
-	FindByID(ctx context.Context, tx domain.DBTX, id domid.UserID) (domain.User, error)
+	FindByEmail(ctx context.Context, tx DBTX, email string) (domain.User, error)
+	FindByID(ctx context.Context, tx DBTX, id domid.UserID) (domain.User, error)
 }

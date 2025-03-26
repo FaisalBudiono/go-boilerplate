@@ -4,6 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
 
@@ -31,7 +32,7 @@ type resultRoleMap struct {
 	err error
 }
 
-func (repo *userRepo) FindByID(ctx context.Context, tx domain.DBTX, id domid.UserID) (domain.User, error) {
+func (repo *userRepo) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByID users")
 	defer span.End()
 
@@ -93,7 +94,7 @@ LIMIT
 	), nil
 }
 
-func (repo *userRepo) FindByEmail(ctx context.Context, tx domain.DBTX, email string) (domain.User, error) {
+func (repo *userRepo) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
 	ctx, span := repo.tracer.Start(ctx, "postgres: findByEmail users")
 	defer span.End()
 
