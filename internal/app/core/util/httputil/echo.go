@@ -11,7 +11,7 @@ import (
 )
 
 func Bind(
-	input any, fieldTypes map[string]string, c echo.Context,
+	c echo.Context, input any, fieldTypes map[string]string,
 ) (map[string][]domain.VerboseError, error) {
 	err := c.Bind(input)
 	if err == nil {

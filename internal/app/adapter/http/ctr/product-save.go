@@ -34,10 +34,10 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
 
-	validationErr, err := httputil.Bind(r, map[string]string{
+	validationErr, err := httputil.Bind(c, r, map[string]string{
 		"name":  "string",
 		"price": "integer",
-	}, c)
+	})
 	if err != nil {
 		otel.SpanLogError(span, err, "failed to bind")
 		return err
