@@ -1,6 +1,7 @@
 module FaisalBudiono/go-boilerplate
 
 go 1.23.3
+
 toolchain go1.24.1
 
 require (
@@ -33,7 +34,7 @@ require (
 require github.com/kelseyhightower/envconfig v1.4.0
 
 require (
-	github.com/XSAM/otelsql v0.37.0
+	github.com/XSAM/otelsql v0.38.0
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
