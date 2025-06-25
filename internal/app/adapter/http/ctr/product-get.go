@@ -5,6 +5,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
@@ -13,7 +14,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type reqGetProduct struct {
@@ -35,12 +35,11 @@ func (r *reqGetProduct) ProductID() string {
 }
 
 func GetProduct(
-	tracer trace.Tracer,
 	authSrv *auth.Auth,
 	srv *product.Product,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: get product")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: get product")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)

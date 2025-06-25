@@ -4,12 +4,12 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
@@ -54,21 +54,19 @@ func SetupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 		return
 	}
 
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	traceLogger, err := logger("./logs/trace.log")
 	if err != nil {
 		handleErr(err)
 		return
 	}
-	file.Close()
 
-	traceLogger := &lumberjack.Logger{
-		Filename:   filename,
-		MaxSize:    100, // megabytes
-		MaxBackups: 30,
-		MaxAge:     90, // days
+	logLogger, err := logger("./logs/log.log")
+	if err != nil {
+		handleErr(err)
+		return
 	}
 
-	conf, err := newConfig(ctx, traceLogger)
+	conf, err := newConfig(ctx, traceLogger, logLogger)
 	if err != nil {
 		handleErr(err)
 		return
@@ -103,12 +101,14 @@ type config struct {
 	res *resource.Resource
 
 	ctx         context.Context
-	traceLogger *lumberjack.Logger
+	traceLogger io.Writer
+	logLogger   io.Writer
 }
 
 func newConfig(
 	ctx context.Context,
-	traceLogger *lumberjack.Logger,
+	traceLogger io.Writer,
+	logLogger io.Writer,
 ) (*config, error) {
 	res, err := resource.Merge(resource.Default(),
 		resource.NewWithAttributes(semconv.SchemaURL,
@@ -124,6 +124,7 @@ func newConfig(
 		ctx: ctx,
 
 		traceLogger: traceLogger,
+		logLogger:   logLogger,
 	}, nil
 }
 
@@ -209,16 +210,27 @@ func (c *config) newLoggerProvider() (*log.LoggerProvider, error) {
 }
 
 func (c *config) newLogExporter() (log.Exporter, error) {
-	endpoint := app.ENV().OtelEndpoint
+	return stdoutlog.New(
+		stdoutlog.WithWriter(c.logLogger),
+	)
+}
 
-	if endpoint == "" {
-		return stdoutlog.New(
-			stdoutlog.WithWriter(c.traceLogger),
-		)
+func logger(filename string) (io.Writer, error) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	file.Close()
+
+	fileLogger := &lumberjack.Logger{
+		Filename:   filename,
+		MaxSize:    100, // megabytes
+		MaxBackups: 30,
+		MaxAge:     30, // days
 	}
 
-	return otlploghttp.New(
-		c.ctx,
-		otlploghttp.WithEndpointURL(endpoint),
-	)
+	return io.MultiWriter(
+		// os.Stdout,
+		fileLogger,
+	), nil
 }

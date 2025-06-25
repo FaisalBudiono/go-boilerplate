@@ -1,6 +1,7 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
@@ -20,7 +21,7 @@ type inputGet interface {
 }
 
 func (srv *Product) Get(req inputGet) (domain.Product, error) {
-	ctx, span := srv.tracer.Start(req.Context(), "service: get product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "service: get product")
 	defer span.End()
 
 	productID := req.ProductID()

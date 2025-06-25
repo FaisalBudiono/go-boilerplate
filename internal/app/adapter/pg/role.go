@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -11,15 +12,12 @@ import (
 
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
-type roleRepo struct {
-	tracer trace.Tracer
-}
+type roleRepo struct{}
 
 func (repo *roleRepo) ByUserIDs(ctx context.Context, tx portout.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: refetched roles")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: refetched roles")
 	defer span.End()
 
 	if len(ids) == 0 {
@@ -77,7 +75,7 @@ ORDER BY
 }
 
 func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx portout.DBTX, id domid.UserID) ([]domain.Role, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: refetched roles")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: refetched roles")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("input.user.id", string(id)))
@@ -116,8 +114,6 @@ ORDER BY
 	return roles, nil
 }
 
-func NewRole(tracer trace.Tracer) *roleRepo {
-	return &roleRepo{
-		tracer: tracer,
-	}
+func NewRole() *roleRepo {
+	return &roleRepo{}
 }

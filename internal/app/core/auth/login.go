@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/rnd"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
@@ -18,7 +19,7 @@ type inputLogin interface {
 }
 
 func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
-	ctx, span := srv.tracer.Start(req.Context(), "service: login")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "service: login")
 	defer span.End()
 
 	email := req.Email()

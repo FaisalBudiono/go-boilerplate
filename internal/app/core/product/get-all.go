@@ -1,6 +1,7 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
 	"slices"
@@ -19,7 +20,7 @@ type inputGetAll interface {
 }
 
 func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination, error) {
-	ctx, span := srv.tracer.Start(req.Context(), "service: get all product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "service: get all product")
 	defer span.End()
 
 	actor := req.Actor()

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
 	"errors"
@@ -15,7 +16,7 @@ type inputParseToken interface {
 }
 
 func (srv *Auth) ParseToken(req inputParseToken) (domain.User, error) {
-	ctx, span := srv.tracer.Start(req.Context(), "service: parse token")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "service: parse token")
 	defer span.End()
 
 	ubasic, err := srv.jwtUserParser.Parse(req.AccessToken())

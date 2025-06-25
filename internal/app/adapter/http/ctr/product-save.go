@@ -6,6 +6,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
@@ -14,12 +15,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type reqSaveProduct struct {
-	tracer trace.Tracer
-
 	ctx          context.Context
 	actor        domain.User
 	priceInCents int64
@@ -29,7 +27,7 @@ type reqSaveProduct struct {
 }
 
 func (r *reqSaveProduct) Bind(c echo.Context) error {
-	_, span := r.tracer.Start(r.ctx, "req: create product")
+	_, span := monitorings.Tracer().Start(r.ctx, "req: create product")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -80,9 +78,9 @@ func (r *reqSaveProduct) Price() int64 {
 	return r.priceInCents
 }
 
-func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
+func SaveProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: save product")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: save product")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)
@@ -100,9 +98,8 @@ func SaveProduct(tracer trace.Tracer, authSrv *auth.Auth, srv *product.Product) 
 		}
 
 		input := &reqSaveProduct{
-			tracer: tracer,
-			ctx:    ctx,
-			actor:  u,
+			ctx:   ctx,
+			actor: u,
 		}
 
 		err = input.Bind(c)

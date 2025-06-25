@@ -4,6 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
@@ -11,19 +12,16 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type reqAuthLogout struct {
-	tracer trace.Tracer
-
 	ctx context.Context
 
 	BodyRefreshToken string `json:"refreshToken" validate:"required"`
 }
 
 func (r *reqAuthLogout) Bind(c echo.Context) error {
-	_, span := r.tracer.Start(r.ctx, "req: logout")
+	_, span := monitorings.Tracer().Start(r.ctx, "req: logout")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -61,14 +59,13 @@ func (r *reqAuthLogout) RefreshToken() string {
 	return r.BodyRefreshToken
 }
 
-func AuthLogout(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
+func AuthLogout(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: logout")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: logout")
 		defer span.End()
 
 		i := &reqAuthLogout{
-			ctx:    ctx,
-			tracer: tracer,
+			ctx: ctx,
 		}
 
 		err := i.Bind(c)
