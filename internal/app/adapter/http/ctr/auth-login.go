@@ -4,6 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
@@ -11,19 +12,17 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type reqAuthLogin struct {
-	ctx    context.Context
-	tracer trace.Tracer
+	ctx context.Context
 
 	BodyEmail    string `json:"email" validate:"required"`
 	BodyPassword string `json:"password" validate:"required"`
 }
 
 func (r *reqAuthLogin) Bind(c echo.Context) error {
-	_, span := r.tracer.Start(r.ctx, "req: login")
+	_, span := monitorings.Tracer().Start(r.ctx, "req: login")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -67,14 +66,13 @@ func (r *reqAuthLogin) Password() string {
 	return r.BodyPassword
 }
 
-func AuthLogin(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
+func AuthLogin(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: login")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: login")
 		defer span.End()
 
 		i := &reqAuthLogin{
-			ctx:    ctx,
-			tracer: tracer,
+			ctx: ctx,
 		}
 
 		err := i.Bind(c)

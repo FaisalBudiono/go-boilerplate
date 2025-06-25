@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
@@ -10,12 +11,9 @@ import (
 
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type userRepo struct {
-	tracer trace.Tracer
-
 	r *roleRepo
 }
 
@@ -33,7 +31,7 @@ type resultRoleMap struct {
 }
 
 func (repo *userRepo) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: findByID users")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByID users")
 	defer span.End()
 
 	ctx, cancel := context.WithCancelCause(ctx)
@@ -95,7 +93,7 @@ LIMIT
 }
 
 func (repo *userRepo) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: findByEmail users")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByEmail users")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("input.email", email))
@@ -139,10 +137,8 @@ LIMIT
 	), nil
 }
 
-func NewUser(tracer trace.Tracer, r *roleRepo) *userRepo {
+func NewUser(r *roleRepo) *userRepo {
 	return &userRepo{
-		tracer: tracer,
-
 		r: r,
 	}
 }

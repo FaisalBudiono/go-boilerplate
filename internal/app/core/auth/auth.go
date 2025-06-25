@@ -5,8 +5,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"database/sql"
 	"errors"
-
-	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -38,8 +36,7 @@ type (
 )
 
 type Auth struct {
-	db     *sql.DB
-	tracer trace.Tracer
+	db *sql.DB
 
 	authActivityRepo portout.AuthActivityRepo
 	userRepo         portout.UserRepo
@@ -55,7 +52,6 @@ type Auth struct {
 
 func New(
 	db *sql.DB,
-	tracer trace.Tracer,
 	authActivityRepo portout.AuthActivityRepo,
 	userRepo portout.UserRepo,
 	passwordVerifier passwordVerifier,
@@ -65,8 +61,7 @@ func New(
 	refreshTokenPayloadParser refreshTokenPayloadParser,
 ) *Auth {
 	return &Auth{
-		db:     db,
-		tracer: tracer,
+		db: db,
 
 		authActivityRepo: authActivityRepo,
 		userRepo:         userRepo,

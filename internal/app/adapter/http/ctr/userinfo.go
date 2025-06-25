@@ -4,18 +4,18 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel/trace"
 )
 
-func Userinfo(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
+func Userinfo(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: userinfo")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: userinfo")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, srv)

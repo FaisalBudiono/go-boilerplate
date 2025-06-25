@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
@@ -15,9 +16,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type productRepo struct {
-	tracer trace.Tracer
-}
+type productRepo struct{}
 
 type product struct {
 	id          string
@@ -27,7 +26,7 @@ type product struct {
 }
 
 func (repo *productRepo) GetAll(ctx context.Context, tx portout.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: products get all")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: products get all")
 	defer span.End()
 
 	span.SetAttributes(
@@ -117,7 +116,7 @@ OFFSET $2
 }
 
 func (repo *productRepo) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: findByID products")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByID products")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("input.id", string(id)))
@@ -155,7 +154,7 @@ LIMIT
 }
 
 func (repo *productRepo) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: publish products")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: publish products")
 	defer span.End()
 
 	span.SetAttributes(attribute.Bool("input.shouldPublish", shouldPublish))
@@ -192,7 +191,7 @@ WHERE
 }
 
 func (repo *productRepo) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: save products")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save products")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("input.name", name), attribute.Int64("input.price", price))
@@ -216,8 +215,6 @@ RETURNING id;
 	return repo.FindByID(ctx, tx, domid.ProductID(strconv.FormatInt(id, 10)))
 }
 
-func NewProduct(tracer trace.Tracer) *productRepo {
-	return &productRepo{
-		tracer: tracer,
-	}
+func NewProduct() *productRepo {
+	return &productRepo{}
 }

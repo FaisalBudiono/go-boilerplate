@@ -1,6 +1,7 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
@@ -19,7 +20,7 @@ type inputPublish interface {
 }
 
 func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
-	ctx, span := srv.tracer.Start(req.Context(), "service: publish product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "service: publish product")
 	defer span.End()
 
 	actor := req.Actor()

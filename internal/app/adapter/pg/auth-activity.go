@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
@@ -10,15 +11,12 @@ import (
 
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
-type authActivity struct {
-	tracer trace.Tracer
-}
+type authActivity struct{}
 
 func (repo *authActivity) DeleteByPayload(ctx context.Context, tx portout.DBTX, payload string) error {
-	ctx, span := repo.tracer.Start(ctx, "postgres: soft delete auth activity by payload")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: soft delete auth activity by payload")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("input.payload", payload))
@@ -50,7 +48,7 @@ RETURNING user_id
 }
 
 func (repo *authActivity) LastActivityByPayload(ctx context.Context, tx portout.DBTX, payload string) (domid.UserID, error) {
-	ctx, span := repo.tracer.Start(ctx, "postgres: update last activity by payload")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: update last activity by payload")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("input.payload", payload))
@@ -82,7 +80,7 @@ RETURNING user_id
 }
 
 func (repo *authActivity) Save(ctx context.Context, tx portout.DBTX, payload string, u domain.User) error {
-	ctx, span := repo.tracer.Start(ctx, "postgres: save auth_activities token")
+	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save auth_activities token")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("input.payload", payload))
@@ -102,8 +100,6 @@ VALUES
 	return tracerr.Wrap(err)
 }
 
-func NewAuthActivity(tracer trace.Tracer) *authActivity {
-	return &authActivity{
-		tracer: tracer,
-	}
+func NewAuthActivity() *authActivity {
+	return &authActivity{}
 }

@@ -4,13 +4,10 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"database/sql"
 	"errors"
-
-	"go.opentelemetry.io/otel/trace"
 )
 
 type Product struct {
-	db     *sql.DB
-	tracer trace.Tracer
+	db *sql.DB
 
 	productRepo portout.ProductRepo
 }
@@ -24,12 +21,10 @@ var (
 
 func New(
 	db *sql.DB,
-	tracer trace.Tracer,
 	productRepo portout.ProductRepo,
 ) *Product {
 	return &Product{
-		db:     db,
-		tracer: tracer,
+		db: db,
 
 		productRepo: productRepo,
 	}

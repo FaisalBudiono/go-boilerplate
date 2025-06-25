@@ -4,6 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
@@ -11,18 +12,16 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type reqAuthRefreshToken struct {
-	ctx    context.Context
-	tracer trace.Tracer
+	ctx context.Context
 
 	BodyRefreshToken string `json:"refreshToken" validate:"required"`
 }
 
 func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
-	_, span := r.tracer.Start(r.ctx, "req: refresh token")
+	_, span := monitorings.Tracer().Start(r.ctx, "req: refresh token")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -60,14 +59,13 @@ func (r *reqAuthRefreshToken) RefreshToken() string {
 	return r.BodyRefreshToken
 }
 
-func AuthRefresh(tracer trace.Tracer, srv *auth.Auth) echo.HandlerFunc {
+func AuthRefresh(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := tracer.Start(c.Request().Context(), "route: refresh token")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: refresh token")
 		defer span.End()
 
 		i := &reqAuthRefreshToken{
-			ctx:    ctx,
-			tracer: tracer,
+			ctx: ctx,
 		}
 
 		err := i.Bind(c)

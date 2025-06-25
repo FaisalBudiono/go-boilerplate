@@ -1,6 +1,7 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
@@ -19,7 +20,7 @@ type inputSave interface {
 }
 
 func (srv *Product) Save(req inputSave) (domain.Product, error) {
-	ctx, span := srv.tracer.Start(req.Context(), "service: save product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "service: save product")
 	defer span.End()
 
 	actor := req.Actor()

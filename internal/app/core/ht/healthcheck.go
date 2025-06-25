@@ -1,20 +1,16 @@
 package ht
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type Healthcheck struct {
 	db *sql.DB
-
-	tracer trace.Tracer
-	logger *slog.Logger
 }
 
 type inputHealthcheck interface {
@@ -22,7 +18,7 @@ type inputHealthcheck interface {
 }
 
 func (srv *Healthcheck) Healthcheck(req inputHealthcheck) error {
-	ctx, span := srv.tracer.Start(req.Context(), "service: healthcheck")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "service: healthcheck")
 	defer span.End()
 
 	err := srv.db.PingContext(ctx)
@@ -36,14 +32,8 @@ func (srv *Healthcheck) Healthcheck(req inputHealthcheck) error {
 	return nil
 }
 
-func New(
-	db *sql.DB,
-	tracer trace.Tracer,
-	logger *slog.Logger,
-) *Healthcheck {
+func New(db *sql.DB) *Healthcheck {
 	return &Healthcheck{
-		db:     db,
-		tracer: tracer,
-		logger: logger,
+		db: db,
 	}
 }
