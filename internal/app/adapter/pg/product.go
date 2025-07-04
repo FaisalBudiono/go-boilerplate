@@ -16,7 +16,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type productRepo struct{}
+type Product struct{}
 
 type product struct {
 	id          string
@@ -25,7 +25,7 @@ type product struct {
 	publishedAt *time.Time
 }
 
-func (repo *productRepo) GetAll(ctx context.Context, tx portout.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
+func (repo *Product) GetAll(ctx context.Context, tx portout.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: products get all")
 	defer span.End()
 
@@ -115,7 +115,7 @@ OFFSET $2
 	return products, total, nil
 }
 
-func (repo *productRepo) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
+func (repo *Product) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByID products")
 	defer span.End()
 
@@ -153,7 +153,7 @@ LIMIT
 	), nil
 }
 
-func (repo *productRepo) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
+func (repo *Product) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: publish products")
 	defer span.End()
 
@@ -190,7 +190,7 @@ WHERE
 	return p, nil
 }
 
-func (repo *productRepo) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
+func (repo *Product) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save products")
 	defer span.End()
 
@@ -215,6 +215,6 @@ RETURNING id;
 	return repo.FindByID(ctx, tx, domid.ProductID(strconv.FormatInt(id, 10)))
 }
 
-func NewProduct() *productRepo {
-	return &productRepo{}
+func NewProduct() *Product {
+	return &Product{}
 }

@@ -14,9 +14,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-type roleRepo struct{}
+type Role struct{}
 
-func (repo *roleRepo) ByUserIDs(ctx context.Context, tx portout.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
+func (repo *Role) ByUserIDs(ctx context.Context, tx portout.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: refetched roles")
 	defer span.End()
 
@@ -74,7 +74,7 @@ ORDER BY
 	return rolesMap, nil
 }
 
-func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx portout.DBTX, id domid.UserID) ([]domain.Role, error) {
+func (repo *Role) RefetchedRoles(ctx context.Context, tx portout.DBTX, id domid.UserID) ([]domain.Role, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: refetched roles")
 	defer span.End()
 
@@ -114,6 +114,6 @@ ORDER BY
 	return roles, nil
 }
 
-func NewRole() *roleRepo {
-	return &roleRepo{}
+func NewRole() *Role {
+	return &Role{}
 }

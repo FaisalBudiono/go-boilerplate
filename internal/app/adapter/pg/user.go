@@ -13,8 +13,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-type userRepo struct {
-	r *roleRepo
+type User struct {
+	r *Role
 }
 
 type user struct {
@@ -30,13 +30,13 @@ type resultRoleMap struct {
 	err error
 }
 
-func (repo *userRepo) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
+func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByID users")
 	defer span.End()
 
 	ctx, cancel := context.WithCancelCause(ctx)
 
-	chanRoleRes := make(chan resultRoleMap, 0)
+	chanRoleRes := make(chan resultRoleMap)
 	go func() {
 		rMap, err := repo.r.ByUserIDs(ctx, tx, []domid.UserID{id})
 		if err != nil {
@@ -92,7 +92,7 @@ LIMIT
 	), nil
 }
 
-func (repo *userRepo) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
+func (repo *User) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByEmail users")
 	defer span.End()
 
@@ -137,8 +137,8 @@ LIMIT
 	), nil
 }
 
-func NewUser(r *roleRepo) *userRepo {
-	return &userRepo{
+func NewUser(r *Role) *User {
+	return &User{
 		r: r,
 	}
 }

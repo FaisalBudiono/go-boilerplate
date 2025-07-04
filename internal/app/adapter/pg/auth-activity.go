@@ -13,9 +13,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-type authActivity struct{}
+type AuthActivity struct{}
 
-func (repo *authActivity) DeleteByPayload(ctx context.Context, tx portout.DBTX, payload string) error {
+func (repo *AuthActivity) DeleteByPayload(ctx context.Context, tx portout.DBTX, payload string) error {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: soft delete auth activity by payload")
 	defer span.End()
 
@@ -47,7 +47,7 @@ RETURNING user_id
 	return nil
 }
 
-func (repo *authActivity) LastActivityByPayload(ctx context.Context, tx portout.DBTX, payload string) (domid.UserID, error) {
+func (repo *AuthActivity) LastActivityByPayload(ctx context.Context, tx portout.DBTX, payload string) (domid.UserID, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: update last activity by payload")
 	defer span.End()
 
@@ -79,7 +79,7 @@ RETURNING user_id
 	return domid.UserID(userID), nil
 }
 
-func (repo *authActivity) Save(ctx context.Context, tx portout.DBTX, payload string, u domain.User) error {
+func (repo *AuthActivity) Save(ctx context.Context, tx portout.DBTX, payload string, u domain.User) error {
 	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save auth_activities token")
 	defer span.End()
 
@@ -100,6 +100,6 @@ VALUES
 	return tracerr.Wrap(err)
 }
 
-func NewAuthActivity() *authActivity {
-	return &authActivity{}
+func NewAuthActivity() *AuthActivity {
+	return &AuthActivity{}
 }
