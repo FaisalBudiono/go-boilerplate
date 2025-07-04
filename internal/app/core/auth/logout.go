@@ -16,7 +16,7 @@ type inputLogout interface {
 }
 
 func (srv *Auth) Logout(req inputLogout) error {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: logout")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.logout")
 	defer span.End()
 
 	payload, err := srv.refreshTokenPayloadParser.ParsePayload(req.RefreshToken())

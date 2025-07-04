@@ -1,15 +1,15 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"context"
+	"log/slog"
 	"slices"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type inputPublish interface {
@@ -20,18 +20,16 @@ type inputPublish interface {
 }
 
 func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: publish product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.publish")
 	defer span.End()
 
 	actor := req.Actor()
 	isPublish := req.IsPublish()
 	productID := req.ProductID()
 
-	span.SetAttributes(
-		attribute.Bool("input.isPublish", isPublish),
-		attribute.String("input.product.id", productID),
-	)
-	span.SetAttributes(spanattr.Actor("input.", actor)...)
+	logVals := []any{slog.Bool("isPublish", isPublish), slog.String("product.id", productID)}
+	logVals = append(logVals, logutil.SlogActor(actor)...)
+	monitorings.Logger().InfoContext(ctx, "input", logVals...)
 
 	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
 		return domain.Product{}, tracerr.Wrap(ErrNotEnoughPermission)

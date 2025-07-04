@@ -2,15 +2,14 @@ package pg
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
+	"log/slog"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type User struct {
@@ -31,8 +30,10 @@ type resultRoleMap struct {
 }
 
 func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByID users")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.user.findByID")
 	defer span.End()
+
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("id", string(id)))
 
 	ctx, cancel := context.WithCancelCause(ctx)
 
@@ -60,11 +61,7 @@ WHERE
 LIMIT
     1
 `
-
-	span.SetAttributes(
-		attribute.String("input.id", string(id)),
-		spanattr.Query(q),
-	)
+	monitorings.Logger().InfoContext(ctx, "making query", slog.String("query", q))
 
 	u := user{}
 	err := tx.QueryRowContext(ctx, q, id).
@@ -93,10 +90,10 @@ LIMIT
 }
 
 func (repo *User) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByEmail users")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.user.findByEmail")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.email", email))
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("email", email))
 
 	u := user{}
 

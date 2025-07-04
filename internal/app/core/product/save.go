@@ -1,15 +1,15 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
+	"log/slog"
 	"slices"
 	"strings"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type inputSave interface {
@@ -20,18 +20,16 @@ type inputSave interface {
 }
 
 func (srv *Product) Save(req inputSave) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: save product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.save")
 	defer span.End()
 
 	actor := req.Actor()
 	name := strings.Trim(req.Name(), " ")
 	price := req.Price()
 
-	span.SetAttributes(
-		attribute.String("input.name", name),
-		attribute.Int64("input.price", price),
-	)
-	span.SetAttributes(spanattr.Actor("input.", actor)...)
+	logVals := []any{slog.String("name", name), slog.Int64("price", price)}
+	logVals = append(logVals, logutil.SlogActor(actor)...)
+	monitorings.Logger().InfoContext(ctx, "input", logVals...)
 
 	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
 		return domain.Product{}, tracerr.Wrap(ErrNotEnoughPermission)

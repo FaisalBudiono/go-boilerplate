@@ -1,25 +1,29 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type AuthActivity struct{}
 
 func (repo *AuthActivity) DeleteByPayload(ctx context.Context, tx portout.DBTX, payload string) error {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: soft delete auth activity by payload")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.auth-activity.deleteByPayload")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.payload", payload))
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		slog.String("payload", payload),
+	)
 
 	now := time.Now().UTC()
 
@@ -48,10 +52,14 @@ RETURNING user_id
 }
 
 func (repo *AuthActivity) LastActivityByPayload(ctx context.Context, tx portout.DBTX, payload string) (domid.UserID, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: update last activity by payload")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.auth-activity.lastActivityByPayload")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.payload", payload))
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		slog.String("payload", payload),
+	)
 
 	now := time.Now().UTC()
 
@@ -80,11 +88,17 @@ RETURNING user_id
 }
 
 func (repo *AuthActivity) Save(ctx context.Context, tx portout.DBTX, payload string, u domain.User) error {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save auth_activities token")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.auth-activity.save")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.payload", payload))
-	span.SetAttributes(spanattr.User("input.", u)...)
+	logVals := []any{slog.String("payload", payload)}
+	logVals = append(logVals, logutil.SlogUser(u)...)
+
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		logVals...,
+	)
 
 	_, err := tx.ExecContext(
 		ctx,

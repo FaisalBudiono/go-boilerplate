@@ -18,7 +18,7 @@ type inputRefreshToken interface {
 }
 
 func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: refresh token")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.refreshToken")
 	defer span.End()
 
 	refreshToken := req.RefreshToken()

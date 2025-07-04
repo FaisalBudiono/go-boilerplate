@@ -7,9 +7,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log/slog"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type inputLogin interface {
@@ -19,11 +19,12 @@ type inputLogin interface {
 }
 
 func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: login")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.login")
 	defer span.End()
 
 	email := req.Email()
-	span.SetAttributes(attribute.String("input.email", email))
+
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("email", email))
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {

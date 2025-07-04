@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -8,11 +9,11 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"time"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -26,13 +27,15 @@ type product struct {
 }
 
 func (repo *Product) GetAll(ctx context.Context, tx portout.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: products get all")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.getAll")
 	defer span.End()
 
-	span.SetAttributes(
-		attribute.Bool("input.showAll", showAll),
-		attribute.Int64("input.offset", offset),
-		attribute.Int64("input.limit", limit),
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		slog.Bool("showAll", showAll),
+		slog.Int64("offset", offset),
+		slog.Int64("limit", limit),
 	)
 
 	publishQuery := ""
@@ -116,10 +119,10 @@ OFFSET $2
 }
 
 func (repo *Product) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByID products")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.findByID")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.id", string(id)))
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("id", string(id)))
 
 	p := product{}
 
@@ -154,11 +157,14 @@ LIMIT
 }
 
 func (repo *Product) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: publish products")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.publish")
 	defer span.End()
 
-	span.SetAttributes(attribute.Bool("input.shouldPublish", shouldPublish))
-	span.SetAttributes(spanattr.Product("input.", p)...)
+	slogVals := make([]any, 0)
+	slogVals = append(slogVals, slog.Bool("shouldPublish", shouldPublish))
+	slogVals = append(slogVals, logutil.SlogProduct("input.", p)...)
+
+	monitorings.Logger().InfoContext(ctx, "input", slogVals...)
 
 	now := time.Now().UTC()
 
@@ -191,10 +197,10 @@ WHERE
 }
 
 func (repo *Product) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save products")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.save")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.name", name), attribute.Int64("input.price", price))
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("name", name), slog.Int64("price", price))
 
 	var id int64
 	err := tx.QueryRowContext(

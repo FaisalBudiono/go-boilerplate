@@ -16,7 +16,7 @@ type inputParseToken interface {
 }
 
 func (srv *Auth) ParseToken(req inputParseToken) (domain.User, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: parse token")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.parseToken")
 	defer span.End()
 
 	ubasic, err := srv.jwtUserParser.Parse(req.AccessToken())
