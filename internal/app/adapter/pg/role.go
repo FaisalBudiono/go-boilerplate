@@ -2,29 +2,32 @@ package pg
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-type roleRepo struct{}
+type Role struct{}
 
-func (repo *roleRepo) ByUserIDs(ctx context.Context, tx portout.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: refetched roles")
+func (repo *Role) ByUserIDs(ctx context.Context, tx portout.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.role.byUserIDs")
 	defer span.End()
 
 	if len(ids) == 0 {
 		return nil, tracerr.New("User IDs is empty")
 	}
 
-	span.SetAttributes(attribute.String("input.user.id", fmt.Sprintf("%#v", ids)))
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		slog.String("ids", fmt.Sprintf("%#v", ids)),
+	)
 
 	query := fmt.Sprintf(
 		`
@@ -47,9 +50,11 @@ ORDER BY
 		args[i] = ids[i]
 	}
 
-	span.SetAttributes(
-		spanattr.Query(query),
-		attribute.String("query.args", fmt.Sprintf("%#v", args)),
+	monitorings.Logger().InfoContext(
+		ctx,
+		"making query",
+		slog.String("query", query),
+		slog.String("args", fmt.Sprintf("%#v", args)),
 	)
 
 	rows, err := tx.QueryContext(ctx, query, args...)
@@ -74,11 +79,11 @@ ORDER BY
 	return rolesMap, nil
 }
 
-func (repo *roleRepo) RefetchedRoles(ctx context.Context, tx portout.DBTX, id domid.UserID) ([]domain.Role, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: refetched roles")
+func (repo *Role) RefetchedRoles(ctx context.Context, tx portout.DBTX, id domid.UserID) ([]domain.Role, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.role.refetchedRoles")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.user.id", string(id)))
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("user.id", string(id)))
 
 	rows, err := tx.QueryContext(ctx, `
 SELECT
@@ -114,6 +119,6 @@ ORDER BY
 	return roles, nil
 }
 
-func NewRole() *roleRepo {
-	return &roleRepo{}
+func NewRole() *Role {
+	return &Role{}
 }

@@ -3,8 +3,8 @@ package auth
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/ztrue/tracerr"
@@ -16,7 +16,7 @@ type inputLogout interface {
 }
 
 func (srv *Auth) Logout(req inputLogout) error {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: logout")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.logout")
 	defer span.End()
 
 	payload, err := srv.refreshTokenPayloadParser.ParsePayload(req.RefreshToken())
@@ -40,7 +40,7 @@ func (srv *Auth) Logout(req inputLogout) error {
 
 	err = srv.authActivityRepo.DeleteByPayload(ctx, tx, payload)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, portout.ErrDataNotFound) {
 			return tracerr.CustomError(ErrTokenExpired, tracerr.StackTrace(err))
 		}
 

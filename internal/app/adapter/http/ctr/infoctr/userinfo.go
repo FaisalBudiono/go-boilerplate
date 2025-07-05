@@ -1,4 +1,4 @@
-package ctr
+package infoctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
@@ -15,7 +15,7 @@ import (
 
 func Userinfo(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: userinfo")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.userinfo")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, srv)
@@ -27,8 +27,8 @@ func Userinfo(srv *auth.Auth) echo.HandlerFunc {
 			if isTokenNotProvidedErr {
 				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
 			}
-			otel.SpanLogError(span, err, "error when parsing token")
 
+			otel.SpanLogError(span, err, "error when parsing token")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

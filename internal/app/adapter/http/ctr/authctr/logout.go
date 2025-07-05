@@ -1,4 +1,4 @@
-package ctr
+package authctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
@@ -14,22 +14,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type reqAuthLogin struct {
+type reqAuthLogout struct {
 	ctx context.Context
 
-	BodyEmail    string `json:"email" validate:"required"`
-	BodyPassword string `json:"password" validate:"required"`
+	BodyRefreshToken string `json:"refreshToken" validate:"required"`
 }
 
-func (r *reqAuthLogin) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: login")
+func (r *reqAuthLogout) Bind(c echo.Context) error {
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.auth.logout")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
 
 	validationErr, err := httputil.Bind(c, r, map[string]string{
-		"email":    "string",
-		"password": "string",
+		"refreshToken": "string",
 	})
 	if err != nil {
 		otel.SpanLogError(span, err, "failed to bind")
@@ -38,8 +36,7 @@ func (r *reqAuthLogin) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	validationErr, err = httputil.ValidateStruct(r, map[string]string{
-		"BodyEmail":    "email",
-		"BodyPassword": "password",
+		"BodyRefreshToken": "refreshToken",
 	})
 	if err != nil {
 		otel.SpanLogError(span, err, "unhandled validator error")
@@ -54,24 +51,20 @@ func (r *reqAuthLogin) Bind(c echo.Context) error {
 	return nil
 }
 
-func (r *reqAuthLogin) Context() context.Context {
+func (r *reqAuthLogout) Context() context.Context {
 	return r.ctx
 }
 
-func (r *reqAuthLogin) Email() string {
-	return r.BodyEmail
+func (r *reqAuthLogout) RefreshToken() string {
+	return r.BodyRefreshToken
 }
 
-func (r *reqAuthLogin) Password() string {
-	return r.BodyPassword
-}
-
-func AuthLogin(srv *auth.Auth) echo.HandlerFunc {
+func Logout(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: login")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.logout")
 		defer span.End()
 
-		i := &reqAuthLogin{
+		i := &reqAuthLogout{
 			ctx: ctx,
 		}
 
@@ -80,24 +73,30 @@ func AuthLogin(srv *auth.Auth) echo.HandlerFunc {
 			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
-			otel.SpanLogError(span, err, "binding request error")
 
+			otel.SpanLogError(span, err, "binding request error")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		token, err := srv.Login(i)
+		err = srv.Logout(i)
 		if err != nil {
-			if errors.Is(err, auth.ErrInvalidCredentials) {
+			if errors.Is(err, auth.ErrInvalidToken) {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError(err.Error(), errcode.AuthInvalidCredentials),
+					res.NewError("Invalid refresh token", errcode.AuthInvalidCredentials),
 				)
 			}
-			otel.SpanLogError(span, err, "error caught in service")
+			if errors.Is(err, auth.ErrTokenExpired) {
+				return c.JSON(
+					http.StatusUnauthorized,
+					res.NewError("Refresh token expired", errcode.AuthInvalidCredentials),
+				)
+			}
 
+			otel.SpanLogError(span, err, "error caught in service")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.Auth(token))
+		return c.NoContent(http.StatusNoContent)
 	}
 }

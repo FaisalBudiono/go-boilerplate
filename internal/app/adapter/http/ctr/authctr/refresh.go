@@ -1,4 +1,4 @@
-package ctr
+package authctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
@@ -14,14 +14,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type reqAuthLogout struct {
+type reqAuthRefreshToken struct {
 	ctx context.Context
 
 	BodyRefreshToken string `json:"refreshToken" validate:"required"`
 }
 
-func (r *reqAuthLogout) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: logout")
+func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.auth.refreshToken")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -51,20 +51,20 @@ func (r *reqAuthLogout) Bind(c echo.Context) error {
 	return nil
 }
 
-func (r *reqAuthLogout) Context() context.Context {
+func (r *reqAuthRefreshToken) Context() context.Context {
 	return r.ctx
 }
 
-func (r *reqAuthLogout) RefreshToken() string {
+func (r *reqAuthRefreshToken) RefreshToken() string {
 	return r.BodyRefreshToken
 }
 
-func AuthLogout(srv *auth.Auth) echo.HandlerFunc {
+func Refresh(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: logout")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.refreshToken")
 		defer span.End()
 
-		i := &reqAuthLogout{
+		i := &reqAuthRefreshToken{
 			ctx: ctx,
 		}
 
@@ -78,7 +78,7 @@ func AuthLogout(srv *auth.Auth) echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		err = srv.Logout(i)
+		token, err := srv.RefreshToken(i)
 		if err != nil {
 			if errors.Is(err, auth.ErrInvalidToken) {
 				return c.JSON(
@@ -86,17 +86,11 @@ func AuthLogout(srv *auth.Auth) echo.HandlerFunc {
 					res.NewError("Invalid refresh token", errcode.AuthInvalidCredentials),
 				)
 			}
-			if errors.Is(err, auth.ErrTokenExpired) {
-				return c.JSON(
-					http.StatusUnauthorized,
-					res.NewError("Refresh token expired", errcode.AuthInvalidCredentials),
-				)
-			}
 
 			otel.SpanLogError(span, err, "error caught in service")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.NoContent(http.StatusNoContent)
+		return c.JSON(http.StatusOK, res.Auth(token))
 	}
 }

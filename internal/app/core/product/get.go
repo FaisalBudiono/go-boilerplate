@@ -1,17 +1,17 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"context"
 	"database/sql"
 	"errors"
+	"log/slog"
 	"slices"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type inputGet interface {
@@ -21,11 +21,17 @@ type inputGet interface {
 }
 
 func (srv *Product) Get(req inputGet) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: get product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.get")
 	defer span.End()
 
 	productID := req.ProductID()
-	span.SetAttributes(attribute.String("input.product.id", productID))
+	actor := req.Actor()
+
+	logVals := []any{slog.String("product.id", productID)}
+	if actor != nil {
+		logVals = append(logVals, logutil.SlogActor(*actor)...)
+	}
+	monitorings.Logger().InfoContext(ctx, "input", logVals...)
 
 	p, err := srv.forceFindProductByID(ctx, domid.ProductID(productID))
 	if err != nil {
@@ -35,13 +41,9 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 	if p.PublishedAt != nil {
 		return p, nil
 	}
-
-	actor := req.Actor()
-
 	if actor == nil {
 		return domain.Product{}, tracerr.Wrap(ErrNotFound)
 	}
-	span.SetAttributes(spanattr.Actor("input.", *actor)...)
 
 	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
 		return domain.Product{}, tracerr.Wrap(ErrNotFound)

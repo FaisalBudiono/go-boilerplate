@@ -1,25 +1,32 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
+	"database/sql"
+	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-type authActivity struct{}
+type AuthActivity struct{}
 
-func (repo *authActivity) DeleteByPayload(ctx context.Context, tx portout.DBTX, payload string) error {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: soft delete auth activity by payload")
+func (repo *AuthActivity) DeleteByPayload(ctx context.Context, tx portout.DBTX, payload string) error {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.auth-activity.deleteByPayload")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.payload", payload))
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		slog.String("payload", payload),
+	)
 
 	now := time.Now().UTC()
 
@@ -41,17 +48,26 @@ RETURNING user_id
 		payload,
 	).Scan(&userID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+		}
+
+		otel.SpanLogError(span, err, "failed to soft delete")
 		return tracerr.Wrap(err)
 	}
 
 	return nil
 }
 
-func (repo *authActivity) LastActivityByPayload(ctx context.Context, tx portout.DBTX, payload string) (domid.UserID, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: update last activity by payload")
+func (repo *AuthActivity) LastActivityByPayload(ctx context.Context, tx portout.DBTX, payload string) (domid.UserID, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.auth-activity.lastActivityByPayload")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.payload", payload))
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		slog.String("payload", payload),
+	)
 
 	now := time.Now().UTC()
 
@@ -73,18 +89,29 @@ RETURNING user_id
 		payload,
 	).Scan(&userID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+		}
+
+		otel.SpanLogError(span, err, "failed to save auth activity")
 		return "", tracerr.Wrap(err)
 	}
 
 	return domid.UserID(userID), nil
 }
 
-func (repo *authActivity) Save(ctx context.Context, tx portout.DBTX, payload string, u domain.User) error {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save auth_activities token")
+func (repo *AuthActivity) Save(ctx context.Context, tx portout.DBTX, payload string, u domain.User) error {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.auth-activity.save")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.payload", payload))
-	span.SetAttributes(spanattr.User("input.", u)...)
+	logVals := []any{slog.String("payload", payload)}
+	logVals = append(logVals, logutil.SlogUser(u)...)
+
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		logVals...,
+	)
 
 	_, err := tx.ExecContext(
 		ctx,
@@ -96,10 +123,14 @@ VALUES
         `,
 		u.ID, payload, time.Now().UTC(),
 	)
+	if err != nil {
+		otel.SpanLogError(span, err, "failed to save auth activity")
+		return tracerr.Wrap(err)
+	}
 
-	return tracerr.Wrap(err)
+	return nil
 }
 
-func NewAuthActivity() *authActivity {
-	return &authActivity{}
+func NewAuthActivity() *AuthActivity {
+	return &AuthActivity{}
 }

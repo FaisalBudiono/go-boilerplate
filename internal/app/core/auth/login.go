@@ -4,12 +4,12 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/rnd"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
-	"database/sql"
 	"errors"
+	"log/slog"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type inputLogin interface {
@@ -19,11 +19,12 @@ type inputLogin interface {
 }
 
 func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: login")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.login")
 	defer span.End()
 
 	email := req.Email()
-	span.SetAttributes(attribute.String("input.email", email))
+
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("email", email))
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -33,7 +34,7 @@ func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
 
 	u, err := srv.userRepo.FindByEmail(ctx, tx, email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, portout.ErrDataNotFound) {
 			return domain.Token{}, tracerr.CustomError(
 				ErrInvalidCredentials,
 				tracerr.StackTrace(err),

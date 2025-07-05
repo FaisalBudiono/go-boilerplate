@@ -18,7 +18,7 @@ type inputHealthcheck interface {
 }
 
 func (srv *Healthcheck) Healthcheck(req inputHealthcheck) error {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: healthcheck")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.ht.healthcheck")
 	defer span.End()
 
 	err := srv.db.PingContext(ctx)

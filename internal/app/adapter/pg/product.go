@@ -1,42 +1,52 @@
 package pg
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domproduct/queryoption"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"time"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-type productRepo struct{}
+type Product struct{}
 
-type product struct {
-	id          string
-	name        string
-	price       int64
-	publishedAt *time.Time
-}
-
-func (repo *productRepo) GetAll(ctx context.Context, tx portout.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: products get all")
+func (repo *Product) GetAll(
+	ctx context.Context,
+	tx portout.DBTX,
+	offset, limit int64,
+	qo ...queryoption.QueryOption,
+) ([]domain.Product, int64, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.getAll")
 	defer span.End()
 
-	span.SetAttributes(
-		attribute.Bool("input.showAll", showAll),
-		attribute.Int64("input.offset", offset),
-		attribute.Int64("input.limit", limit),
+	opts := queryoption.NewQueryOpt()
+	for _, qo := range qo {
+		qo(opts)
+	}
+
+	monitorings.Logger().InfoContext(
+		ctx,
+		"input",
+		slog.String("opts", fmt.Sprintf("%#v", opts)),
+		slog.Int64("offset", offset),
+		slog.Int64("limit", limit),
 	)
 
 	publishQuery := ""
-	if !showAll {
+	if !opts.ShowAll {
 		publishQuery = "AND published_at IS NOT NULL"
 	}
 
@@ -91,37 +101,47 @@ OFFSET $2
 
 	span.AddEvent("fetching real data", trace.WithAttributes(spanattr.Query(query)))
 
-	r, err := tx.QueryContext(ctx, query, limit, offset)
+	rows, err := tx.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, 0, tracerr.Wrap(err)
 	}
-	defer r.Close()
+	defer rows.Close()
 
 	products := make([]domain.Product, 0)
-	for r.Next() {
-		p := product{}
+	for rows.Next() {
+		var raw struct {
+			id          string
+			name        string
+			price       int64
+			publishedAt *time.Time
+		}
 
-		err = r.Scan(&p.id, &p.name, &p.price, &p.publishedAt)
+		err = rows.Scan(&raw.id, &raw.name, &raw.price, &raw.publishedAt)
 		if err != nil {
 			return nil, 0, tracerr.Wrap(err)
 		}
 
 		products = append(
 			products,
-			domain.NewProduct(domid.ProductID(p.id), p.name, p.price, p.publishedAt),
+			domain.NewProduct(domid.ProductID(raw.id), raw.name, raw.price, raw.publishedAt),
 		)
 	}
 
 	return products, total, nil
 }
 
-func (repo *productRepo) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: findByID products")
+func (repo *Product) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.findByID")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.id", string(id)))
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("id", string(id)))
 
-	p := product{}
+	var raw struct {
+		id          string
+		name        string
+		price       int64
+		publishedAt *time.Time
+	}
 
 	err := tx.QueryRowContext(
 		ctx,
@@ -140,25 +160,32 @@ LIMIT
     1;
 `,
 		id,
-	).Scan(&p.id, &p.name, &p.price, &p.publishedAt)
+	).Scan(&raw.id, &raw.name, &raw.price, &raw.publishedAt)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.Product{}, tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+		}
+
+		otel.SpanLogError(span, err, "failed to find product")
 		return domain.Product{}, tracerr.Wrap(err)
 	}
 
 	return domain.NewProduct(
-		domid.ProductID(p.id),
-		p.name,
-		p.price,
-		p.publishedAt,
+		domid.ProductID(raw.id),
+		raw.name,
+		raw.price,
+		raw.publishedAt,
 	), nil
 }
 
-func (repo *productRepo) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: publish products")
+func (repo *Product) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.publish")
 	defer span.End()
 
-	span.SetAttributes(attribute.Bool("input.shouldPublish", shouldPublish))
-	span.SetAttributes(spanattr.Product("input.", p)...)
+	slogVals := make([]any, 0)
+	slogVals = append(slogVals, slog.Bool("shouldPublish", shouldPublish))
+	slogVals = append(slogVals, logutil.SlogProduct("input.", p)...)
+	monitorings.Logger().InfoContext(ctx, "input", slogVals...)
 
 	now := time.Now().UTC()
 
@@ -190,11 +217,11 @@ WHERE
 	return p, nil
 }
 
-func (repo *productRepo) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "postgres: save products")
+func (repo *Product) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.save")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("input.name", name), attribute.Int64("input.price", price))
+	monitorings.Logger().InfoContext(ctx, "input", slog.String("name", name), slog.Int64("price", price))
 
 	var id int64
 	err := tx.QueryRowContext(
@@ -215,6 +242,6 @@ RETURNING id;
 	return repo.FindByID(ctx, tx, domid.ProductID(strconv.FormatInt(id, 10)))
 }
 
-func NewProduct() *productRepo {
-	return &productRepo{}
+func NewProduct() *Product {
+	return &Product{}
 }

@@ -1,12 +1,13 @@
 package product
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domproduct/queryoption"
 	"context"
+	"log/slog"
 	"slices"
-
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type inputGetAll interface {
@@ -20,7 +21,7 @@ type inputGetAll interface {
 }
 
 func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "service: get all product")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.getAll")
 	defer span.End()
 
 	actor := req.Actor()
@@ -28,9 +29,15 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 	perPage := req.PerPage()
 	showAll := req.CMSAcces()
 
-	span.SetAttributes(attribute.Int64("input.page", page))
-	span.SetAttributes(attribute.Int64("input.perPage", perPage))
-	span.SetAttributes(attribute.Bool("input.cmsAccess", showAll))
+	logVals := []any{
+		slog.Int64("page", page),
+		slog.Int64("perPage", perPage),
+		slog.Bool("cmsAccess", showAll),
+	}
+	if actor != nil {
+		logVals = append(logVals, logutil.SlogActor(*actor)...)
+	}
+	monitorings.Logger().InfoContext(ctx, "input", logVals...)
 
 	if page < 1 {
 		page = 1
@@ -43,7 +50,7 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 
 	isNotAdmin := actor == nil || !slices.Contains(actor.Roles, domain.RoleAdmin)
 	if isNotAdmin {
-		products, total, err := srv.productRepo.GetAll(ctx, srv.db, false, offset, perPage)
+		products, total, err := srv.productRepo.GetAll(ctx, srv.db, offset, perPage)
 		if err != nil {
 			return nil, domain.Pagination{}, err
 		}
@@ -53,7 +60,13 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 
 	span.AddEvent("fetched product for admin")
 
-	products, total, err := srv.productRepo.GetAll(ctx, srv.db, showAll, offset, perPage)
+	products, total, err := srv.productRepo.GetAll(
+		ctx,
+		srv.db,
+		offset,
+		perPage,
+		queryoption.WithShowFlag(showAll),
+	)
 	if err != nil {
 		return nil, domain.Pagination{}, err
 	}

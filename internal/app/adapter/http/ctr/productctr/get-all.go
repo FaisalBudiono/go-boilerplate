@@ -1,4 +1,4 @@
-package ctr
+package productctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
@@ -28,7 +28,7 @@ type reqGetAllProduct struct {
 }
 
 func (r *reqGetAllProduct) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: binding get all products")
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.product.getAll")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -86,12 +86,12 @@ func (r *reqGetAllProduct) CMSAcces() bool {
 	return r.showAllFlag
 }
 
-func GetAllProduct(
+func GetAll(
 	authSrv *auth.Auth,
 	srv *product.Product,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: get all product")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.getAll")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)
@@ -107,7 +107,6 @@ func GetAllProduct(
 			}
 			if !errors.Is(err, req.ErrNoTokenProvided) {
 				otel.SpanLogError(span, err, "error when parsing token")
-
 				return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 			}
 		}
@@ -127,18 +126,17 @@ func GetAllProduct(
 			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
-			otel.SpanLogError(span, err, "error when binding request")
 
+			otel.SpanLogError(span, err, "error when binding request")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		ps, pg, err := srv.GetAll(i)
+		products, pg, err := srv.GetAll(i)
 		if err != nil {
 			otel.SpanLogError(span, err, "error caught in service")
-
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.ProductPaginated(ps, pg))
+		return c.JSON(http.StatusOK, res.ProductPaginated(products, pg))
 	}
 }
