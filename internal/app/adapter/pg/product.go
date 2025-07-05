@@ -7,6 +7,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domproduct/queryoption"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"database/sql"
@@ -22,20 +23,30 @@ import (
 
 type Product struct{}
 
-func (repo *Product) GetAll(ctx context.Context, tx portout.DBTX, showAll bool, offset int64, limit int64) ([]domain.Product, int64, error) {
+func (repo *Product) GetAll(
+	ctx context.Context,
+	tx portout.DBTX,
+	offset, limit int64,
+	qo ...queryoption.QueryOption,
+) ([]domain.Product, int64, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.getAll")
 	defer span.End()
+
+	opts := queryoption.NewQueryOpt()
+	for _, qo := range qo {
+		qo(opts)
+	}
 
 	monitorings.Logger().InfoContext(
 		ctx,
 		"input",
-		slog.Bool("showAll", showAll),
+		slog.String("opts", fmt.Sprintf("%#v", opts)),
 		slog.Int64("offset", offset),
 		slog.Int64("limit", limit),
 	)
 
 	publishQuery := ""
-	if !showAll {
+	if !opts.ShowAll {
 		publishQuery = "AND published_at IS NOT NULL"
 	}
 

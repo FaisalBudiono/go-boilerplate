@@ -4,6 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/domproduct/queryoption"
 	"context"
 	"log/slog"
 	"slices"
@@ -49,7 +50,7 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 
 	isNotAdmin := actor == nil || !slices.Contains(actor.Roles, domain.RoleAdmin)
 	if isNotAdmin {
-		products, total, err := srv.productRepo.GetAll(ctx, srv.db, false, offset, perPage)
+		products, total, err := srv.productRepo.GetAll(ctx, srv.db, offset, perPage)
 		if err != nil {
 			return nil, domain.Pagination{}, err
 		}
@@ -59,7 +60,13 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 
 	span.AddEvent("fetched product for admin")
 
-	products, total, err := srv.productRepo.GetAll(ctx, srv.db, showAll, offset, perPage)
+	products, total, err := srv.productRepo.GetAll(
+		ctx,
+		srv.db,
+		offset,
+		perPage,
+		queryoption.WithShowFlag(showAll),
+	)
 	if err != nil {
 		return nil, domain.Pagination{}, err
 	}
