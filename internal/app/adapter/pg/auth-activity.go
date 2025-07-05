@@ -3,10 +3,13 @@ package pg
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
+	"database/sql"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -45,6 +48,11 @@ RETURNING user_id
 		payload,
 	).Scan(&userID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+		}
+
+		otel.SpanLogError(span, err, "failed to soft delete")
 		return tracerr.Wrap(err)
 	}
 
@@ -81,6 +89,11 @@ RETURNING user_id
 		payload,
 	).Scan(&userID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+		}
+
+		otel.SpanLogError(span, err, "failed to save auth activity")
 		return "", tracerr.Wrap(err)
 	}
 
@@ -110,8 +123,12 @@ VALUES
         `,
 		u.ID, payload, time.Now().UTC(),
 	)
+	if err != nil {
+		otel.SpanLogError(span, err, "failed to save auth activity")
+		return tracerr.Wrap(err)
+	}
 
-	return tracerr.Wrap(err)
+	return nil
 }
 
 func NewAuthActivity() *AuthActivity {

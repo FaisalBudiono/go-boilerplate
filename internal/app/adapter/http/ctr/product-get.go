@@ -55,7 +55,6 @@ func GetProduct(
 			}
 			if !errors.Is(err, req.ErrNoTokenProvided) {
 				otel.SpanLogError(span, err, "error when parsing token")
-
 				return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 			}
 		}
@@ -79,8 +78,8 @@ func GetProduct(
 					res.NewError("Product not found", errcode.ProductNotFound),
 				)
 			}
-			otel.SpanLogError(span, err, "error caught in service")
 
+			otel.SpanLogError(span, err, "error caught in service")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

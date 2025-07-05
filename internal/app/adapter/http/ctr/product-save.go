@@ -92,8 +92,8 @@ func SaveProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 			if isTokenNotProvidedErr {
 				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
 			}
-			otel.SpanLogError(span, err, "error when parsing token")
 
+			otel.SpanLogError(span, err, "error when parsing token")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
@@ -107,8 +107,8 @@ func SaveProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
-			otel.SpanLogError(span, err, "error when binding request")
 
+			otel.SpanLogError(span, err, "error when binding request")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
@@ -132,8 +132,8 @@ func SaveProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 					res.NewError(err.Error(), errcode.ProductNegativePrice),
 				)
 			}
-			otel.SpanLogError(span, err, "error caught in service")
 
+			otel.SpanLogError(span, err, "error caught in service")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

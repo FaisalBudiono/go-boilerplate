@@ -4,8 +4,8 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/rnd"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
-	"database/sql"
 	"errors"
 	"log/slog"
 
@@ -34,7 +34,7 @@ func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
 
 	u, err := srv.userRepo.FindByEmail(ctx, tx, email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, portout.ErrDataNotFound) {
 			return domain.Token{}, tracerr.CustomError(
 				ErrInvalidCredentials,
 				tracerr.StackTrace(err),

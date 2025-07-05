@@ -86,8 +86,8 @@ func AuthRefresh(srv *auth.Auth) echo.HandlerFunc {
 					res.NewError("Invalid refresh token", errcode.AuthInvalidCredentials),
 				)
 			}
-			otel.SpanLogError(span, err, "error caught in service")
 
+			otel.SpanLogError(span, err, "error caught in service")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

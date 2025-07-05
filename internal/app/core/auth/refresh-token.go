@@ -5,8 +5,8 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/ztrue/tracerr"
@@ -43,7 +43,7 @@ func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
 
 	userID, err := srv.authActivityRepo.LastActivityByPayload(ctx, tx, payload)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, portout.ErrDataNotFound) {
 			return domain.Token{}, tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))
 		}
 

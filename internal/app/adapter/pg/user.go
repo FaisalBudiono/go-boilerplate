@@ -2,10 +2,12 @@ package pg
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
+	"database/sql"
 	"errors"
 	"log/slog"
 
@@ -16,19 +18,12 @@ type User struct {
 	r *Role
 }
 
-type user struct {
-	id          string
-	name        string
-	phoneNumber string
-	email       string
-	password    string
-}
-
 type resultRoleMap struct {
 	res map[domid.UserID][]domain.Role
 	err error
 }
 
+// FindByID is not safe for *[sql.Tx]
 func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.user.findByID")
 	defer span.End()
@@ -63,14 +58,24 @@ LIMIT
 `
 	monitorings.Logger().InfoContext(ctx, "making query", slog.String("query", q))
 
-	u := user{}
+	var raw struct {
+		id          string
+		name        string
+		phoneNumber string
+		email       string
+		password    string
+	}
 	err := tx.QueryRowContext(ctx, q, id).
-		Scan(&u.id, &u.name, &u.email, &u.phoneNumber, &u.password)
+		Scan(&raw.id, &raw.name, &raw.email, &raw.phoneNumber, &raw.password)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
 			return domain.User{}, context.Cause(ctx)
 		}
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.User{}, tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+		}
 
+		otel.SpanLogError(span, err, "failed to find user")
 		return domain.User{}, tracerr.Wrap(err)
 	}
 
@@ -80,22 +85,29 @@ LIMIT
 	}
 
 	return domain.NewUser(
-		domid.UserID(u.id),
-		u.name,
-		u.phoneNumber,
-		u.email,
-		u.password,
-		resRoleMap.res[domid.UserID(u.id)],
+		domid.UserID(raw.id),
+		raw.name,
+		raw.phoneNumber,
+		raw.email,
+		raw.password,
+		resRoleMap.res[domid.UserID(raw.id)],
 	), nil
 }
 
+// FindByEmail is not safe for *[sql.Tx]
 func (repo *User) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.user.findByEmail")
 	defer span.End()
 
 	monitorings.Logger().InfoContext(ctx, "input", slog.String("email", email))
 
-	u := user{}
+	var raw struct {
+		id          string
+		name        string
+		phoneNumber string
+		email       string
+		password    string
+	}
 
 	err := tx.QueryRowContext(
 		ctx,
@@ -114,22 +126,27 @@ LIMIT
     1;
         `,
 		email,
-	).Scan(&u.id, &u.name, &u.email, &u.phoneNumber, &u.password)
+	).Scan(&raw.id, &raw.name, &raw.email, &raw.phoneNumber, &raw.password)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.User{}, tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+		}
+
+		otel.SpanLogError(span, err, "failed to find user")
 		return domain.User{}, tracerr.Wrap(err)
 	}
 
-	roles, err := repo.r.RefetchedRoles(ctx, tx, domid.UserID(u.id))
+	roles, err := repo.r.RefetchedRoles(ctx, tx, domid.UserID(raw.id))
 	if err != nil {
 		return domain.User{}, err
 	}
 
 	return domain.NewUser(
-		domid.UserID(u.id),
-		u.name,
-		u.phoneNumber,
-		u.email,
-		u.password,
+		domid.UserID(raw.id),
+		raw.name,
+		raw.phoneNumber,
+		raw.email,
+		raw.password,
 		roles,
 	), nil
 }

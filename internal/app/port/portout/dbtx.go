@@ -5,6 +5,8 @@ import (
 	"database/sql"
 )
 
+var ErrDataNotFound = sql.ErrNoRows
+
 type DBTX interface {
 	ExecContext(context.Context, string, ...any) (sql.Result, error)
 	PrepareContext(context.Context, string) (*sql.Stmt, error)
