@@ -21,7 +21,7 @@ type reqAuthRefreshToken struct {
 }
 
 func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: refresh token")
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.auth.refreshToken")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -61,7 +61,7 @@ func (r *reqAuthRefreshToken) RefreshToken() string {
 
 func AuthRefresh(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: refresh token")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.refreshToken")
 		defer span.End()
 
 		i := &reqAuthRefreshToken{
@@ -73,8 +73,8 @@ func AuthRefresh(srv *auth.Auth) echo.HandlerFunc {
 			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
-			otel.SpanLogError(span, err, "binding request error")
 
+			otel.SpanLogError(span, err, "binding request error")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

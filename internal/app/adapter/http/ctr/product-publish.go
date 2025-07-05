@@ -28,7 +28,7 @@ type reqPublishProduct struct {
 }
 
 func (r *reqPublishProduct) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: publish product")
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.product.publish")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -78,7 +78,7 @@ func (r *reqPublishProduct) ProductID() string {
 
 func PublishProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: publish product")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.publish")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)

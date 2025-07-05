@@ -21,7 +21,7 @@ type reqAuthLogout struct {
 }
 
 func (r *reqAuthLogout) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: logout")
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.auth.logout")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -61,7 +61,7 @@ func (r *reqAuthLogout) RefreshToken() string {
 
 func AuthLogout(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: logout")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.logout")
 		defer span.End()
 
 		i := &reqAuthLogout{

@@ -22,7 +22,7 @@ type reqAuthLogin struct {
 }
 
 func (r *reqAuthLogin) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: login")
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.auth.login")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -68,7 +68,7 @@ func (r *reqAuthLogin) Password() string {
 
 func AuthLogin(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: login")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.login")
 		defer span.End()
 
 		i := &reqAuthLogin{
@@ -80,8 +80,8 @@ func AuthLogin(srv *auth.Auth) echo.HandlerFunc {
 			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
-			otel.SpanLogError(span, err, "binding request error")
 
+			otel.SpanLogError(span, err, "binding request error")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
@@ -93,8 +93,8 @@ func AuthLogin(srv *auth.Auth) echo.HandlerFunc {
 					res.NewError(err.Error(), errcode.AuthInvalidCredentials),
 				)
 			}
-			otel.SpanLogError(span, err, "error caught in service")
 
+			otel.SpanLogError(span, err, "error caught in service")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

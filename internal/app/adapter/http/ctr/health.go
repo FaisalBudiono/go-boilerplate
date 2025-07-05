@@ -25,7 +25,7 @@ func (r *healthReq) Context() context.Context {
 
 func Health(srv *ht.Healthcheck) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: healthcheck")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.healthcheck")
 		defer span.End()
 
 		err := srv.Healthcheck(&healthReq{

@@ -28,7 +28,7 @@ type reqGetAllProduct struct {
 }
 
 func (r *reqGetAllProduct) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "req: binding get all products")
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.product.getAll")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -91,7 +91,7 @@ func GetAllProduct(
 	srv *product.Product,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: get all product")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.getAll")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)

@@ -39,7 +39,7 @@ func GetProduct(
 	srv *product.Product,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "route: get product")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.get")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)
