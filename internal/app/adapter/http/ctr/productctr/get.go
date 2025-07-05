@@ -1,4 +1,4 @@
-package ctr
+package productctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
@@ -34,7 +34,7 @@ func (r *reqGetProduct) ProductID() string {
 	return r.productID
 }
 
-func GetProduct(
+func Get(
 	authSrv *auth.Auth,
 	srv *product.Product,
 ) echo.HandlerFunc {

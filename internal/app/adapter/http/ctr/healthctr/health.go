@@ -1,4 +1,4 @@
-package ctr
+package healthctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/ht"

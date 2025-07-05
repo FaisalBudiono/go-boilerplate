@@ -1,4 +1,4 @@
-package ctr
+package authctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
@@ -59,7 +59,7 @@ func (r *reqAuthRefreshToken) RefreshToken() string {
 	return r.BodyRefreshToken
 }
 
-func AuthRefresh(srv *auth.Auth) echo.HandlerFunc {
+func Refresh(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.refreshToken")
 		defer span.End()

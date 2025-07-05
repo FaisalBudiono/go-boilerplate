@@ -1,4 +1,4 @@
-package ctr
+package productctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
@@ -86,7 +86,7 @@ func (r *reqGetAllProduct) CMSAcces() bool {
 	return r.showAllFlag
 }
 
-func GetAllProduct(
+func GetAll(
 	authSrv *auth.Auth,
 	srv *product.Product,
 ) echo.HandlerFunc {

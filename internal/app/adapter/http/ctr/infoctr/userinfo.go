@@ -1,4 +1,4 @@
-package ctr
+package infoctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"

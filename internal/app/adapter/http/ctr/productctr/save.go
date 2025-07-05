@@ -1,4 +1,4 @@
-package ctr
+package productctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/req"
@@ -17,24 +17,24 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type reqPublishProduct struct {
-	ctx context.Context
+type reqSaveProduct struct {
+	ctx          context.Context
+	actor        domain.User
+	priceInCents int64
 
-	actor     domain.User
-	productID string
-	isPublish bool
-
-	BodyIsPublish *bool `json:"isPublish" validate:"required"`
+	BodyName  string `json:"name" validate:"required"`
+	BodyPrice int64  `json:"price"`
 }
 
-func (r *reqPublishProduct) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "http.req.product.publish")
+func (r *reqSaveProduct) Bind(c echo.Context) error {
+	_, span := monitorings.Tracer().Start(r.ctx, "http.req.product.save")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
 
 	validationErr, err := httputil.Bind(c, r, map[string]string{
-		"isPublish": "boolean",
+		"name":  "string",
+		"price": "integer",
 	})
 	if err != nil {
 		otel.SpanLogError(span, err, "failed to bind")
@@ -43,10 +43,12 @@ func (r *reqPublishProduct) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	validationErr, err = httputil.ValidateStruct(r, map[string]string{
-		"BodyIsPublish": "isPublish",
+		"BodyName":  "name",
+		"BodyPrice": "price",
 	})
 	if err != nil {
 		otel.SpanLogError(span, err, "unhandled validator error")
+
 		return err
 	}
 	errMsgs.AppendDomMap(validationErr)
@@ -55,30 +57,30 @@ func (r *reqPublishProduct) Bind(c echo.Context) error {
 		return res.NewErrorUnprocessable(errMsgs)
 	}
 
-	r.isPublish = *r.BodyIsPublish
+	r.priceInCents = r.BodyPrice * 100
 
 	return nil
 }
 
-func (r *reqPublishProduct) Actor() domain.User {
+func (r *reqSaveProduct) Actor() domain.User {
 	return r.actor
 }
 
-func (r *reqPublishProduct) Context() context.Context {
+func (r *reqSaveProduct) Context() context.Context {
 	return r.ctx
 }
 
-func (r *reqPublishProduct) IsPublish() bool {
-	return r.isPublish
+func (r *reqSaveProduct) Name() string {
+	return r.BodyName
 }
 
-func (r *reqPublishProduct) ProductID() string {
-	return r.productID
+func (r *reqSaveProduct) Price() int64 {
+	return r.priceInCents
 }
 
-func PublishProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
+func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.publish")
+		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.save")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)
@@ -88,23 +90,19 @@ func PublishProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				errors.Is(err, req.ErrTokenExpired)
 
 			if isTokenNotProvidedErr {
-				return c.JSON(
-					http.StatusUnauthorized,
-					res.NewError(err.Error(), errcode.AuthUnauthorized),
-				)
+				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
 			}
 
 			otel.SpanLogError(span, err, "error when parsing token")
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		i := &reqPublishProduct{
-			ctx:       ctx,
-			productID: c.Param("productID"),
-			actor:     u,
+		input := &reqSaveProduct{
+			ctx:   ctx,
+			actor: u,
 		}
 
-		err = i.Bind(c)
+		err = input.Bind(c)
 		if err != nil {
 			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
@@ -114,7 +112,7 @@ func PublishProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		p, err := srv.Publish(i)
+		p, err := srv.Save(input)
 		if err != nil {
 			if errors.Is(err, product.ErrNotEnoughPermission) {
 				return c.JSON(
@@ -122,10 +120,16 @@ func PublishProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 					res.NewError(err.Error(), errcode.AuthPermissionInsufficient),
 				)
 			}
-			if errors.Is(err, product.ErrNotFound) {
+			if errors.Is(err, product.ErrEmptyName) {
 				return c.JSON(
-					http.StatusNotFound,
-					res.NewError("Product not found", errcode.ProductNotFound),
+					http.StatusConflict,
+					res.NewError(err.Error(), errcode.ProductEmptyName),
+				)
+			}
+			if errors.Is(err, product.ErrNegativePrice) {
+				return c.JSON(
+					http.StatusConflict,
+					res.NewError(err.Error(), errcode.ProductNegativePrice),
 				)
 			}
 
@@ -133,6 +137,6 @@ func PublishProduct(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
-		return c.JSON(http.StatusOK, res.Product(p))
+		return c.JSON(http.StatusCreated, res.Product(p))
 	}
 }
