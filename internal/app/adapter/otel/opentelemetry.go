@@ -47,20 +47,20 @@ func SetupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 		err = errors.Join(inErr, shutdown(ctx))
 	}
 
-	filename := "./logs/trace.log"
-	err = os.MkdirAll(filepath.Dir(filename), 0755)
+	dir := "./logs"
+	err = os.MkdirAll(dir, 0755)
 	if err != nil {
 		handleErr(err)
 		return
 	}
 
-	traceLogger, err := logger("./logs/trace.log")
+	traceLogger, err := logger(filepath.Join(dir, "trace.log"))
 	if err != nil {
 		handleErr(err)
 		return
 	}
 
-	logLogger, err := logger("./logs/log.log")
+	logLogger, err := logger(filepath.Join(dir, "log.log"))
 	if err != nil {
 		handleErr(err)
 		return
