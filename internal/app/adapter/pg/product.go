@@ -7,8 +7,8 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domproduct/queryoption"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout/productoptions"
 	"context"
 	"database/sql"
 	"errors"
@@ -27,12 +27,12 @@ func (repo *Product) GetAll(
 	ctx context.Context,
 	tx portout.DBTX,
 	offset, limit int64,
-	qo ...queryoption.QueryOption,
+	qo ...productoptions.QueryOption,
 ) ([]domain.Product, int64, error) {
 	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.getAll")
 	defer span.End()
 
-	opts := queryoption.NewQueryOpt()
+	opts := productoptions.NewQueryOpt()
 	for _, qo := range qo {
 		qo(opts)
 	}
