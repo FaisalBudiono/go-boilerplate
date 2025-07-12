@@ -35,7 +35,7 @@ require github.com/kelseyhightower/envconfig v1.4.0
 require github.com/cenkalti/backoff/v5 v5.0.2 // indirect
 
 require (
-	github.com/XSAM/otelsql v0.38.0
+	github.com/XSAM/otelsql v0.39.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
