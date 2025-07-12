@@ -7,10 +7,6 @@ import (
 	"os"
 )
 
-const (
-	create string = "create"
-)
-
 func main() {
 	app.BindENV()
 

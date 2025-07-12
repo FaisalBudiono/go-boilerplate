@@ -4,7 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domproduct/queryoption"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout/productoptions"
 	"context"
 	"log/slog"
 	"slices"
@@ -65,7 +65,7 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 		srv.db,
 		offset,
 		perPage,
-		queryoption.WithShowFlag(showAll),
+		productoptions.WithShowFlag(showAll),
 	)
 	if err != nil {
 		return nil, domain.Pagination{}, err
