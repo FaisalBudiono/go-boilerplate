@@ -30,7 +30,10 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
-require github.com/kelseyhightower/envconfig v1.4.0
+require (
+	github.com/kelseyhightower/envconfig v1.4.0
+	go.opentelemetry.io/contrib/processors/minsev v0.10.0
+)
 
 require github.com/cenkalti/backoff/v5 v5.0.2 // indirect
 

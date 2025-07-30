@@ -8,6 +8,15 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
+type LogLevel string
+
+const (
+	LogLevelDebug LogLevel = "debug"
+	LogLevelInfo  LogLevel = "info"
+	LogLevelWarn  LogLevel = "warn"
+	LogLevelError LogLevel = "error"
+)
+
 type envConfig struct {
 	AppName string `envconfig:"APP_NAME" default:"go-boilerplate"`
 
@@ -19,6 +28,10 @@ type envConfig struct {
 	PgPort     string `envconfig:"POSTGRES_PORT" required:"true"`
 	PgDBName   string `envconfig:"POSTGRES_DB_NAME" required:"true"`
 	PgSSLMode  string `envconfig:"POSTGRES_SSL_MODE" required:"true"`
+
+	Log struct {
+		Level LogLevel `envconfig:"LOG_LEVEL" default:"info" required:"false"`
+	}
 
 	JwtSecret        string `envconfig:"JWT_SECRET" required:"true"`
 	JwtTTLSecond     int    `envconfig:"JWT_TTL_SECOND" default:"600" required:"false"`

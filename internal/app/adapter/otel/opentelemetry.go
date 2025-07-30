@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"go.opentelemetry.io/contrib/processors/minsev"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -143,9 +144,7 @@ func (c *config) newTraceProvider() (*trace.TracerProvider, error) {
 
 	traceProvider := trace.NewTracerProvider(
 		trace.WithResource(c.res),
-		trace.WithBatcher(traceExporter,
-			// Default is 5s. Set to 1s for demonstrative purposes.
-			trace.WithBatchTimeout(time.Second)),
+		trace.WithBatcher(traceExporter),
 	)
 
 	return traceProvider, nil
@@ -203,7 +202,10 @@ func (c *config) newLoggerProvider() (*log.LoggerProvider, error) {
 
 	loggerProvider := log.NewLoggerProvider(
 		log.WithResource(c.res),
-		log.WithProcessor(log.NewBatchProcessor(logExporter)),
+		log.WithProcessor(minsev.NewLogProcessor(
+			log.NewBatchProcessor(logExporter),
+			minimumLogLevel(),
+		)),
 	)
 
 	return loggerProvider, nil
@@ -233,4 +235,19 @@ func logger(filename string) (io.Writer, error) {
 		// os.Stdout,
 		fileLogger,
 	), nil
+}
+
+func minimumLogLevel() minsev.Severity {
+	switch app.ENV().Log.Level {
+	case app.LogLevelDebug:
+		return minsev.SeverityDebug
+	case app.LogLevelInfo:
+		return minsev.SeverityInfo
+	case app.LogLevelWarn:
+		return minsev.SeverityWarn
+	case app.LogLevelError:
+		return minsev.SeverityError
+	default:
+		return minsev.SeverityInfo
+	}
 }
