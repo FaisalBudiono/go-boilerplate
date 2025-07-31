@@ -232,7 +232,7 @@ func logger(filename string) (io.Writer, error) {
 	}
 
 	return io.MultiWriter(
-		// os.Stdout,
+		os.Stdout,
 		fileLogger,
 	), nil
 }
