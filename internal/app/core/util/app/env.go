@@ -2,7 +2,10 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
@@ -16,6 +19,13 @@ const (
 	LogLevelWarn  LogLevel = "warn"
 	LogLevelError LogLevel = "error"
 )
+
+var logLevels = []LogLevel{
+	LogLevelDebug,
+	LogLevelInfo,
+	LogLevelWarn,
+	LogLevelError,
+}
 
 type envConfig struct {
 	AppName string `envconfig:"APP_NAME" default:"go-boilerplate"`
@@ -52,6 +62,15 @@ func BindENV() {
 	if err != nil {
 		printSpecUsage()
 		panic(err)
+	}
+
+	if !slices.Contains(logLevels, env.Log.Level) {
+		validLevels := make([]string, len(logLevels))
+		for i, l := range logLevels {
+			validLevels[i] = string(l)
+		}
+
+		panic(fmt.Sprintf("LOG_LEVEL only support [%s]", strings.Join(validLevels, ",")))
 	}
 }
 
