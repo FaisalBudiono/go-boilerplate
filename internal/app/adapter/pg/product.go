@@ -5,7 +5,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
-	"FaisalBudiono/go-boilerplate/internal/app/port/portout/productoptions"
+	"FaisalBudiono/go-boilerplate/internal/app/port/portout/options/product/optproduct"
 	"context"
 	"database/sql"
 	"errors"
@@ -22,12 +22,12 @@ func (repo *Product) GetAll(
 	ctx context.Context,
 	tx portout.DBTX,
 	offset, limit int64,
-	qo ...productoptions.QueryOption,
+	qo ...optproduct.QueryOption,
 ) ([]domain.Product, int64, error) {
 	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.Product.GetAll")
 	defer span.End()
 
-	opts := productoptions.NewQueryOpt()
+	opts := optproduct.NewQueryOpt()
 	for _, qo := range qo {
 		qo(opts)
 	}

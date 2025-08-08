@@ -1,4 +1,4 @@
-package productoptions
+package optproduct
 
 type queryOpt struct {
 	ShowAll bool
