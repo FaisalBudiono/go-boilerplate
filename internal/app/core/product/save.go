@@ -2,7 +2,7 @@ package product
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
 	"log/slog"
@@ -18,7 +18,7 @@ type inputSave interface {
 }
 
 func (srv *Product) Save(req inputSave) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Product.Save")
+	ctx, span := monitoring.Tracer().Start(req.Context(), "core.Product.Save")
 	defer span.End()
 
 	actor := req.Actor()
@@ -27,7 +27,7 @@ func (srv *Product) Save(req inputSave) (domain.Product, error) {
 
 	logVals := []any{slog.String("name", name), slog.Int64("price", price)}
 	logVals = append(logVals, logutil.SlogActor(actor)...)
-	monitorings.Logger().InfoContext(ctx, "input", logVals...)
+	monitoring.Logger().InfoContext(ctx, "input", logVals...)
 
 	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
 		return domain.Product{}, ErrNotEnoughPermission

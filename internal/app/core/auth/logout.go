@@ -2,7 +2,7 @@ package auth
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
@@ -14,7 +14,7 @@ type inputLogout interface {
 }
 
 func (srv *Auth) Logout(req inputLogout) error {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.logout")
+	ctx, span := monitoring.Tracer().Start(req.Context(), "core.auth.logout")
 	defer span.End()
 
 	payload, err := srv.refreshTokenPayloadParser.ParsePayload(req.RefreshToken())

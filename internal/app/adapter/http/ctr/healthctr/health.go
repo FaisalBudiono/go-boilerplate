@@ -2,7 +2,7 @@ package healthctr
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"context"
 	"net/http"
@@ -25,7 +25,7 @@ func (r *healthReq) Context() context.Context {
 
 func Health(srv *ht.Healthcheck) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.healthcheck")
+		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.ctr.healthcheck")
 		defer span.End()
 
 		err := srv.Healthcheck(&healthReq{

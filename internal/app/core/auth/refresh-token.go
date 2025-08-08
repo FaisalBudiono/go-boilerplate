@@ -2,7 +2,7 @@ package auth
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
@@ -16,7 +16,7 @@ type inputRefreshToken interface {
 }
 
 func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.refreshToken")
+	ctx, span := monitoring.Tracer().Start(req.Context(), "core.auth.refreshToken")
 	defer span.End()
 
 	refreshToken := req.RefreshToken()

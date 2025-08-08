@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/rnd"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
@@ -17,12 +17,12 @@ type inputLogin interface {
 }
 
 func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Auth.Login")
+	ctx, span := monitoring.Tracer().Start(req.Context(), "core.Auth.Login")
 	defer span.End()
 
 	email := req.Email()
 
-	monitorings.Logger().InfoContext(ctx, "input", slog.String("email", email))
+	monitoring.Logger().InfoContext(ctx, "input", slog.String("email", email))
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {

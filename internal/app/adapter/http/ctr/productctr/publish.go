@@ -6,7 +6,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
@@ -28,7 +28,7 @@ type reqPublishProduct struct {
 }
 
 func (r *reqPublishProduct) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "http.req.product.publish")
+	_, span := monitoring.Tracer().Start(r.ctx, "http.req.product.publish")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -78,7 +78,7 @@ func (r *reqPublishProduct) ProductID() string {
 
 func Publish(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.publish")
+		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.ctr.product.publish")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)

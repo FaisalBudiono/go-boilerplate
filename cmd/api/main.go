@@ -4,7 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/providers"
 	"context"
 
@@ -30,7 +30,7 @@ func main() {
 	tracer := otel.NewTracer(app.ENV().AppName)
 	logger := otel.NewLogger(app.ENV().AppName)
 
-	monitorings.SetUp(tracer, logger)
+	monitoring.SetUp(tracer, logger)
 	providers.SetUp()
 
 	e := echo.New()

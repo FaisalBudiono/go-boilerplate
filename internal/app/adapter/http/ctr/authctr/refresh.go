@@ -4,7 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
@@ -21,7 +21,7 @@ type reqAuthRefreshToken struct {
 }
 
 func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "http.req.auth.refreshToken")
+	_, span := monitoring.Tracer().Start(r.ctx, "http.req.auth.refreshToken")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -61,7 +61,7 @@ func (r *reqAuthRefreshToken) RefreshToken() string {
 
 func Refresh(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.refreshToken")
+		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.ctr.auth.refreshToken")
 		defer span.End()
 
 		i := &reqAuthRefreshToken{

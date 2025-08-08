@@ -1,7 +1,7 @@
 package pg
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
@@ -23,10 +23,10 @@ type resultRoleMap struct {
 
 // Not safe for transactions
 func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.User.findByID")
+	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.User.findByID")
 	defer span.End()
 
-	monitorings.Logger().InfoContext(ctx, "input", slog.String("id", string(id)))
+	monitoring.Logger().InfoContext(ctx, "input", slog.String("id", string(id)))
 
 	ctx, cancel := context.WithCancelCause(ctx)
 
@@ -54,7 +54,7 @@ WHERE
 LIMIT
     1
 `
-	monitorings.Logger().DebugContext(ctx, "making query", slog.String("query", q))
+	monitoring.Logger().DebugContext(ctx, "making query", slog.String("query", q))
 
 	var raw struct {
 		id          string
@@ -94,10 +94,10 @@ LIMIT
 
 // FindByEmail not safe for transactions
 func (repo *User) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.User.findByEmail")
+	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.User.findByEmail")
 	defer span.End()
 
-	monitorings.Logger().InfoContext(ctx, "input", slog.String("email", email))
+	monitoring.Logger().InfoContext(ctx, "input", slog.String("email", email))
 
 	var raw struct {
 		id          string

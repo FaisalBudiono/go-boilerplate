@@ -5,7 +5,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/product"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
@@ -28,7 +28,7 @@ type reqGetAllProduct struct {
 }
 
 func (r *reqGetAllProduct) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "http.req.product.getAll")
+	_, span := monitoring.Tracer().Start(r.ctx, "http.req.product.getAll")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -91,7 +91,7 @@ func GetAll(
 	srv *product.Product,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.product.getAll")
+		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.ctr.product.getAll")
 		defer span.End()
 
 		u, err := req.ParseToken(ctx, c, authSrv)

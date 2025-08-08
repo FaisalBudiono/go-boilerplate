@@ -1,7 +1,7 @@
 package pg
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
@@ -18,14 +18,14 @@ type Role struct{}
 func (repo *Role) ByUserIDs(
 	ctx context.Context, tx portout.DBTX, ids []domid.UserID,
 ) (map[domid.UserID][]domain.Role, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Role.ByUserIDs")
+	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.Role.ByUserIDs")
 	defer span.End()
 
 	if len(ids) == 0 {
 		return make(map[domid.UserID][]domain.Role), nil
 	}
 
-	monitorings.Logger().InfoContext(ctx, "input",
+	monitoring.Logger().InfoContext(ctx, "input",
 		slog.Any("ids", ids),
 	)
 
@@ -50,7 +50,7 @@ ORDER BY
 		args[i] = ids[i]
 	}
 
-	monitorings.Logger().DebugContext(ctx, "query",
+	monitoring.Logger().DebugContext(ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
 	)
@@ -60,7 +60,7 @@ ORDER BY
 		span.RecordError(err)
 		span.SetStatus(codes.Error, "failed to query")
 
-		monitorings.Logger().ErrorContext(ctx, "failed to query",
+		monitoring.Logger().ErrorContext(ctx, "failed to query",
 			slog.Any("error", err),
 		)
 
@@ -77,7 +77,7 @@ ORDER BY
 			span.RecordError(err)
 			span.SetStatus(codes.Error, "failed to scan row")
 
-			monitorings.Logger().ErrorContext(ctx, "failed to scan row",
+			monitoring.Logger().ErrorContext(ctx, "failed to scan row",
 				slog.Any("error", err),
 			)
 
@@ -93,10 +93,10 @@ ORDER BY
 func (repo *Role) GetByUserID(
 	ctx context.Context, tx portout.DBTX, id domid.UserID,
 ) ([]domain.Role, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Role.GetByUserID")
+	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.Role.GetByUserID")
 	defer span.End()
 
-	monitorings.Logger().InfoContext(ctx, "input", slog.Any("id", id))
+	monitoring.Logger().InfoContext(ctx, "input", slog.Any("id", id))
 
 	rows, err := tx.QueryContext(ctx, `
 SELECT
@@ -115,7 +115,7 @@ ORDER BY
 		span.RecordError(err)
 		span.SetStatus(codes.Error, "failed to query")
 
-		monitorings.Logger().ErrorContext(ctx, "failed to query",
+		monitoring.Logger().ErrorContext(ctx, "failed to query",
 			slog.Any("error", err),
 		)
 
@@ -132,7 +132,7 @@ ORDER BY
 			span.RecordError(err)
 			span.SetStatus(codes.Error, "failed to scan row")
 
-			monitorings.Logger().ErrorContext(ctx, "failed to scan row",
+			monitoring.Logger().ErrorContext(ctx, "failed to scan row",
 				slog.Any("error", err),
 			)
 

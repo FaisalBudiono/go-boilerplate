@@ -1,7 +1,7 @@
 package ht
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"context"
 	"database/sql"
 
@@ -17,7 +17,7 @@ type inputHealthcheck interface {
 }
 
 func (srv *Healthcheck) Healthcheck(req inputHealthcheck) error {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.ht.healthcheck")
+	ctx, span := monitoring.Tracer().Start(req.Context(), "core.ht.healthcheck")
 	defer span.End()
 
 	err := srv.db.PingContext(ctx)

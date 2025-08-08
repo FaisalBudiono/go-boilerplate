@@ -4,7 +4,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httputil"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 	"context"
@@ -21,7 +21,7 @@ type reqAuthLogout struct {
 }
 
 func (r *reqAuthLogout) Bind(c echo.Context) error {
-	_, span := monitorings.Tracer().Start(r.ctx, "http.req.auth.logout")
+	_, span := monitoring.Tracer().Start(r.ctx, "http.req.auth.logout")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -61,7 +61,7 @@ func (r *reqAuthLogout) RefreshToken() string {
 
 func Logout(srv *auth.Auth) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx, span := monitorings.Tracer().Start(c.Request().Context(), "http.ctr.auth.logout")
+		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.ctr.auth.logout")
 		defer span.End()
 
 		i := &reqAuthLogout{

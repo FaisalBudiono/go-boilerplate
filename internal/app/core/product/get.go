@@ -2,7 +2,7 @@ package product
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"context"
@@ -19,7 +19,7 @@ type inputGet interface {
 }
 
 func (srv *Product) Get(req inputGet) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Product.Get")
+	ctx, span := monitoring.Tracer().Start(req.Context(), "core.Product.Get")
 	defer span.End()
 
 	productID := req.ProductID()
@@ -29,7 +29,7 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 	if actor != nil {
 		logVals = append(logVals, logutil.SlogActor(*actor)...)
 	}
-	monitorings.Logger().InfoContext(ctx, "input", logVals...)
+	monitoring.Logger().InfoContext(ctx, "input", logVals...)
 
 	p, err := srv.forceFindProductByID(ctx, domid.ProductID(productID))
 	if err != nil {

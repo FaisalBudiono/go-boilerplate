@@ -1,5 +1,4 @@
-// @todo change to `monitoring`
-package monitorings
+package monitoring
 
 import (
 	"io"

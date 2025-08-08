@@ -2,7 +2,7 @@ package product
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"context"
@@ -18,7 +18,7 @@ type inputPublish interface {
 }
 
 func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Product.Publish")
+	ctx, span := monitoring.Tracer().Start(req.Context(), "core.Product.Publish")
 	defer span.End()
 
 	actor := req.Actor()
@@ -27,7 +27,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 
 	logVals := []any{slog.Bool("isPublish", isPublish), slog.String("product.id", productID)}
 	logVals = append(logVals, logutil.SlogActor(actor)...)
-	monitorings.Logger().InfoContext(ctx, "input", logVals...)
+	monitoring.Logger().InfoContext(ctx, "input", logVals...)
 
 	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
 		return domain.Product{}, ErrNotEnoughPermission
