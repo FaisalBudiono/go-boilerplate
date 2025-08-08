@@ -150,6 +150,7 @@ func (c *config) newTraceProvider() (*trace.TracerProvider, error) {
 	return traceProvider, nil
 }
 
+// @todo add configurable env for trace and log exporter so it can sent to turn on the opentelemetry one by one
 func (c *config) newTraceExporter() (trace.SpanExporter, error) {
 	endpoint := app.ENV().OtelEndpoint
 
