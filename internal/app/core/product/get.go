@@ -10,8 +10,6 @@ import (
 	"errors"
 	"log/slog"
 	"slices"
-
-	"github.com/ztrue/tracerr"
 )
 
 type inputGet interface {
@@ -21,7 +19,7 @@ type inputGet interface {
 }
 
 func (srv *Product) Get(req inputGet) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.get")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Product.Get")
 	defer span.End()
 
 	productID := req.ProductID()
@@ -41,12 +39,10 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 	if p.PublishedAt != nil {
 		return p, nil
 	}
-	if actor == nil {
-		return domain.Product{}, tracerr.Wrap(ErrNotFound)
-	}
 
-	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
-		return domain.Product{}, tracerr.Wrap(ErrNotFound)
+	isNotAdmin := actor == nil || !slices.Contains(actor.Roles, domain.RoleAdmin)
+	if isNotAdmin {
+		return domain.Product{}, ErrNotFound
 	}
 
 	return p, nil
@@ -56,7 +52,7 @@ func (srv *Product) forceFindProductByID(ctx context.Context, id domid.ProductID
 	p, err := srv.productRepo.FindByID(ctx, srv.db, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.Product{}, tracerr.CustomError(ErrNotFound, tracerr.StackTrace(err))
+			return domain.Product{}, errors.Join(ErrNotFound, err)
 		}
 
 		return domain.Product{}, err

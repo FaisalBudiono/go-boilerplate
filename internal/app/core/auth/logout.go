@@ -6,8 +6,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
-
-	"github.com/ztrue/tracerr"
 )
 
 type inputLogout interface {
@@ -26,7 +24,7 @@ func (srv *Auth) Logout(req inputLogout) error {
 			errors.Is(err, jwt.ErrTokenExpired)
 
 		if isInvalidTokenErr {
-			return tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))
+			return errors.Join(ErrInvalidToken, err)
 		}
 
 		return err
@@ -34,14 +32,14 @@ func (srv *Auth) Logout(req inputLogout) error {
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {
-		return tracerr.Wrap(err)
+		return err
 	}
 	defer tx.Rollback()
 
 	err = srv.authActivityRepo.DeleteByPayload(ctx, tx, payload)
 	if err != nil {
 		if errors.Is(err, portout.ErrDataNotFound) {
-			return tracerr.CustomError(ErrTokenExpired, tracerr.StackTrace(err))
+			return errors.Join(ErrTokenExpired, err)
 		}
 
 		return err
@@ -49,7 +47,7 @@ func (srv *Auth) Logout(req inputLogout) error {
 
 	err = tx.Commit()
 	if err != nil {
-		return tracerr.Wrap(err)
+		return err
 	}
 
 	return nil

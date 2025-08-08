@@ -8,8 +8,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-
-	"github.com/ztrue/tracerr"
 )
 
 type superAdmin struct {
@@ -50,7 +48,7 @@ RETURNING id
 	).Scan(&foundId)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			return tracerr.Wrap(err)
+			return err
 		}
 
 		err = r.insertUser()
@@ -78,7 +76,7 @@ LIMIT 1
 	}
 
 	if !errors.Is(err, sql.ErrNoRows) {
-		return tracerr.Wrap(err)
+		return err
 	}
 
 	return r.insertAdminRole()
@@ -105,7 +103,7 @@ VALUES
 		password,
 	)
 
-	return tracerr.Wrap(err)
+	return err
 }
 
 func (r *superAdmin) insertAdminRole() error {
@@ -120,7 +118,7 @@ VALUES
 		domain.RoleAdmin,
 	)
 
-	return tracerr.Wrap(err)
+	return err
 }
 
 func NewSuperAdmin(ctx context.Context, db portout.DBTX) *superAdmin {

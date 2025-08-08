@@ -8,8 +8,6 @@ import (
 	"context"
 	"log/slog"
 	"slices"
-
-	"github.com/ztrue/tracerr"
 )
 
 type inputPublish interface {
@@ -20,7 +18,7 @@ type inputPublish interface {
 }
 
 func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.publish")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Product.Publish")
 	defer span.End()
 
 	actor := req.Actor()
@@ -32,7 +30,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 	monitorings.Logger().InfoContext(ctx, "input", logVals...)
 
 	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
-		return domain.Product{}, tracerr.Wrap(ErrNotEnoughPermission)
+		return domain.Product{}, ErrNotEnoughPermission
 	}
 
 	p, err := srv.forceFindProductByID(ctx, domid.ProductID(productID))
@@ -42,7 +40,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {
-		return domain.Product{}, tracerr.Wrap(err)
+		return domain.Product{}, err
 	}
 	defer tx.Rollback()
 
@@ -53,7 +51,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 
 	err = tx.Commit()
 	if err != nil {
-		return domain.Product{}, tracerr.Wrap(err)
+		return domain.Product{}, err
 	}
 
 	return p, nil

@@ -12,7 +12,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/codes"
 )
 
@@ -49,7 +48,7 @@ RETURNING user_id
 	).Scan(&userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+			return errors.Join(portout.ErrDataNotFound, err)
 		}
 
 		span.RecordError(err)
@@ -59,7 +58,7 @@ RETURNING user_id
 			slog.Any("error", err),
 		)
 
-		return tracerr.Wrap(err)
+		return err
 	}
 
 	return nil
@@ -96,7 +95,7 @@ RETURNING user_id
 	).Scan(&userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+			return "", errors.Join(portout.ErrDataNotFound, err)
 		}
 
 		span.RecordError(err)
@@ -106,7 +105,7 @@ RETURNING user_id
 			slog.Any("error", err),
 		)
 
-		return "", tracerr.Wrap(err)
+		return "", err
 	}
 
 	return domid.UserID(userID), nil
@@ -143,7 +142,7 @@ VALUES
 			slog.Any("error", err),
 		)
 
-		return tracerr.Wrap(err)
+		return err
 	}
 
 	return nil

@@ -6,8 +6,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"context"
 	"errors"
-
-	"github.com/ztrue/tracerr"
 )
 
 type inputParseToken interface {
@@ -22,15 +20,15 @@ func (srv *Auth) ParseToken(req inputParseToken) (domain.User, error) {
 	ubasic, err := srv.jwtUserParser.Parse(req.AccessToken())
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenMalformed) {
-			return domain.User{}, tracerr.Wrap(ErrInvalidToken)
+			return domain.User{}, errors.Join(ErrInvalidToken, err)
 		}
 
 		if errors.Is(err, jwt.ErrSignatureInvalid) {
-			return domain.User{}, tracerr.Wrap(ErrInvalidToken)
+			return domain.User{}, errors.Join(ErrInvalidToken, err)
 		}
 
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return domain.User{}, tracerr.Wrap(ErrTokenExpired)
+			return domain.User{}, errors.Join(ErrTokenExpired, err)
 		}
 
 		return domain.User{}, err

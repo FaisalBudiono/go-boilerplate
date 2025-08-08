@@ -8,8 +8,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
-
-	"github.com/ztrue/tracerr"
 )
 
 type inputRefreshToken interface {
@@ -29,7 +27,7 @@ func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
 			errors.Is(err, jwt.ErrTokenExpired)
 
 		if isInvalidTokenErr {
-			return domain.Token{}, tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))
+			return domain.Token{}, errors.Join(ErrInvalidToken, err)
 		}
 
 		return domain.Token{}, err
@@ -37,14 +35,14 @@ func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {
-		return domain.Token{}, tracerr.Wrap(err)
+		return domain.Token{}, err
 	}
 	defer tx.Rollback()
 
 	userID, err := srv.authActivityRepo.LastActivityByPayload(ctx, tx, payload)
 	if err != nil {
 		if errors.Is(err, portout.ErrDataNotFound) {
-			return domain.Token{}, tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))
+			return domain.Token{}, errors.Join(ErrInvalidToken, err)
 		}
 
 		return domain.Token{}, err
@@ -57,7 +55,7 @@ func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
 
 	err = tx.Commit()
 	if err != nil {
-		return domain.Token{}, tracerr.Wrap(err)
+		return domain.Token{}, err
 	}
 
 	return domain.NewToken(accessToken, refreshToken), nil

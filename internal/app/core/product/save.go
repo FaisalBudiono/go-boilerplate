@@ -8,8 +8,6 @@ import (
 	"log/slog"
 	"slices"
 	"strings"
-
-	"github.com/ztrue/tracerr"
 )
 
 type inputSave interface {
@@ -20,7 +18,7 @@ type inputSave interface {
 }
 
 func (srv *Product) Save(req inputSave) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.save")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Product.Save")
 	defer span.End()
 
 	actor := req.Actor()
@@ -32,20 +30,20 @@ func (srv *Product) Save(req inputSave) (domain.Product, error) {
 	monitorings.Logger().InfoContext(ctx, "input", logVals...)
 
 	if !slices.Contains(actor.Roles, domain.RoleAdmin) {
-		return domain.Product{}, tracerr.Wrap(ErrNotEnoughPermission)
+		return domain.Product{}, ErrNotEnoughPermission
 	}
 
 	if name == "" {
-		return domain.Product{}, tracerr.Wrap(ErrEmptyName)
+		return domain.Product{}, ErrEmptyName
 	}
 
 	if price < 0 {
-		return domain.Product{}, tracerr.Wrap(ErrNegativePrice)
+		return domain.Product{}, ErrNegativePrice
 	}
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {
-		return domain.Product{}, tracerr.Wrap(err)
+		return domain.Product{}, err
 	}
 	defer tx.Rollback()
 
@@ -56,7 +54,7 @@ func (srv *Product) Save(req inputSave) (domain.Product, error) {
 
 	err = tx.Commit()
 	if err != nil {
-		return domain.Product{}, tracerr.Wrap(err)
+		return domain.Product{}, err
 	}
 
 	return p, nil

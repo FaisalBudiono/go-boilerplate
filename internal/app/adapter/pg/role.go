@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/codes"
 )
 
@@ -65,7 +64,7 @@ ORDER BY
 			slog.Any("error", err),
 		)
 
-		return nil, tracerr.Wrap(err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -82,7 +81,7 @@ ORDER BY
 				slog.Any("error", err),
 			)
 
-			return nil, tracerr.Wrap(err)
+			return nil, err
 		}
 
 		rolesMap[domid.UserID(userID)] = append(rolesMap[domid.UserID(userID)], domain.Role(role))
@@ -120,7 +119,7 @@ ORDER BY
 			slog.Any("error", err),
 		)
 
-		return nil, tracerr.Wrap(err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -137,7 +136,7 @@ ORDER BY
 				slog.Any("error", err),
 			)
 
-			return nil, tracerr.Wrap(err)
+			return nil, err
 		}
 
 		roles = append(roles, role)

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/ztrue/tracerr"
 )
 
 type reqParseToken struct {
@@ -33,13 +32,13 @@ var (
 func ParseToken(ctx context.Context, c echo.Context, a *auth.Auth) (domain.User, error) {
 	tokenHeader := c.Request().Header.Get("authorization")
 	if tokenHeader == "" {
-		return domain.User{}, tracerr.Wrap(ErrNoTokenProvided)
+		return domain.User{}, ErrNoTokenProvided
 	}
 
 	tokens := strings.Split(tokenHeader, " ")
 
 	if len(tokens) != 2 {
-		return domain.User{}, tracerr.Wrap(ErrInvalidToken)
+		return domain.User{}, ErrInvalidToken
 	}
 
 	u, err := a.ParseToken(&reqParseToken{
@@ -48,10 +47,10 @@ func ParseToken(ctx context.Context, c echo.Context, a *auth.Auth) (domain.User,
 	})
 	if err != nil {
 		if errors.Is(err, auth.ErrInvalidToken) {
-			return domain.User{}, tracerr.Wrap(ErrInvalidToken)
+			return domain.User{}, ErrInvalidToken
 		}
 		if errors.Is(err, auth.ErrTokenExpired) {
-			return domain.User{}, tracerr.Wrap(ErrTokenExpired)
+			return domain.User{}, ErrTokenExpired
 		}
 
 		return domain.User{}, err

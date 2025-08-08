@@ -8,8 +8,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-
-	"github.com/ztrue/tracerr"
 )
 
 type inputLogin interface {
@@ -19,7 +17,7 @@ type inputLogin interface {
 }
 
 func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.login")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Auth.Login")
 	defer span.End()
 
 	email := req.Email()
@@ -28,17 +26,14 @@ func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
 
 	tx, err := srv.db.BeginTx(ctx, nil)
 	if err != nil {
-		return domain.Token{}, tracerr.Wrap(err)
+		return domain.Token{}, err
 	}
 	defer tx.Rollback()
 
 	u, err := srv.userRepo.FindByEmail(ctx, tx, email)
 	if err != nil {
 		if errors.Is(err, portout.ErrDataNotFound) {
-			return domain.Token{}, tracerr.CustomError(
-				ErrInvalidCredentials,
-				tracerr.StackTrace(err),
-			)
+			return domain.Token{}, errors.Join(ErrInvalidCredentials, err)
 		}
 
 		return domain.Token{}, err
@@ -50,7 +45,7 @@ func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
 	}
 
 	if !match {
-		return domain.Token{}, tracerr.Wrap(ErrInvalidCredentials)
+		return domain.Token{}, ErrInvalidCredentials
 	}
 
 	token, err := srv.jwtUserSigner.Sign(domain.NewUserBasicInfo(u.ID))
@@ -71,7 +66,7 @@ func (srv *Auth) Login(req inputLogin) (domain.Token, error) {
 
 	err = tx.Commit()
 	if err != nil {
-		return domain.Token{}, tracerr.Wrap(err)
+		return domain.Token{}, err
 	}
 
 	return domain.NewToken(token, refreshToken), nil

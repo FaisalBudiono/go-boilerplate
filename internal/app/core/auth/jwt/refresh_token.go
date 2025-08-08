@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/ztrue/tracerr"
 )
 
 type refreshTokenSigner struct {
@@ -36,7 +35,7 @@ func (signer *refreshTokenSigner) Sign(payload string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString(signer.key)
 	if err != nil {
-		return "", tracerr.Wrap(err)
+		return "", errors.Join(errors.New("failed to signed string"), err)
 	}
 
 	return ss, nil
@@ -48,23 +47,23 @@ func (signer *refreshTokenSigner) ParsePayload(token string) (string, error) {
 	})
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenMalformed) {
-			return "", tracerr.Wrap(ErrTokenMalformed)
+			return "", (ErrTokenMalformed)
 		}
 
 		if errors.Is(err, jwt.ErrSignatureInvalid) {
-			return "", tracerr.Wrap(ErrSignatureInvalid)
+			return "", (ErrSignatureInvalid)
 		}
 
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return "", tracerr.Wrap(ErrTokenExpired)
+			return "", (ErrTokenExpired)
 		}
 
-		return "", tracerr.Wrap(err)
+		return "", errors.Join(errors.New("failed to parse claims"), err)
 	}
 
 	claims, ok := tok.Claims.(*refreshTokenClaims)
 	if !ok {
-		return "", tracerr.New("Failed to fetch claims")
+		return "", errors.New("Failed to fetch claims")
 	}
 
 	return claims.Payload, nil

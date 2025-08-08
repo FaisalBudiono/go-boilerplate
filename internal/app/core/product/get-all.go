@@ -21,18 +21,18 @@ type inputGetAll interface {
 }
 
 func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.product.getAll")
+	ctx, span := monitorings.Tracer().Start(req.Context(), "core.Product.GetAll")
 	defer span.End()
 
 	actor := req.Actor()
 	page := req.Page()
 	perPage := req.PerPage()
-	showAll := req.CMSAcces()
+	cmsAccess := req.CMSAcces()
 
 	logVals := []any{
 		slog.Int64("page", page),
 		slog.Int64("perPage", perPage),
-		slog.Bool("cmsAccess", showAll),
+		slog.Bool("cmsAccess", cmsAccess),
 	}
 	if actor != nil {
 		logVals = append(logVals, logutil.SlogActor(*actor)...)
@@ -65,7 +65,7 @@ func (srv *Product) GetAll(req inputGetAll) ([]domain.Product, domain.Pagination
 		srv.db,
 		offset,
 		perPage,
-		productoptions.WithShowFlag(showAll),
+		productoptions.WithShowFlag(cmsAccess),
 	)
 	if err != nil {
 		return nil, domain.Pagination{}, err

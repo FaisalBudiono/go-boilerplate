@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/codes"
 )
 
@@ -26,7 +25,7 @@ func (srv *Healthcheck) Healthcheck(req inputHealthcheck) error {
 		span.SetStatus(codes.Error, "sql error")
 		span.RecordError(err)
 
-		return tracerr.Wrap(err)
+		return err
 	}
 
 	return nil

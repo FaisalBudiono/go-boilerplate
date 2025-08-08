@@ -10,8 +10,6 @@ import (
 	"database/sql"
 	"errors"
 	"log/slog"
-
-	"github.com/ztrue/tracerr"
 )
 
 type User struct {
@@ -72,11 +70,11 @@ LIMIT
 			return domain.User{}, context.Cause(ctx)
 		}
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.User{}, tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+			return domain.User{}, errors.Join(portout.ErrDataNotFound, err)
 		}
 
 		otel.SpanLogError(span, err, "failed to find user")
-		return domain.User{}, tracerr.Wrap(err)
+		return domain.User{}, err
 	}
 
 	resRoleMap := <-chanRoleRes
@@ -129,11 +127,11 @@ LIMIT
 	).Scan(&raw.id, &raw.name, &raw.email, &raw.phoneNumber, &raw.password)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.User{}, tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+			return domain.User{}, errors.Join(portout.ErrDataNotFound, err)
 		}
 
 		otel.SpanLogError(span, err, "failed to find user")
-		return domain.User{}, tracerr.Wrap(err)
+		return domain.User{}, err
 	}
 
 	roles, err := repo.r.GetByUserID(ctx, tx, domid.UserID(raw.id))

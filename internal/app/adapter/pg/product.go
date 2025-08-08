@@ -15,7 +15,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ztrue/tracerr"
 	"go.opentelemetry.io/otel/codes"
 )
 
@@ -90,7 +89,7 @@ FROM
 			slog.Any("error", err),
 		)
 
-		return nil, 0, tracerr.Wrap(err)
+		return nil, 0, err
 	}
 
 	query := fmt.Sprintf(
@@ -117,7 +116,7 @@ OFFSET $2
 			slog.Any("error", err),
 		)
 
-		return nil, 0, tracerr.Wrap(err)
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -139,7 +138,7 @@ OFFSET $2
 				slog.Any("error", err),
 			)
 
-			return nil, 0, tracerr.Wrap(err)
+			return nil, 0, err
 		}
 
 		products = append(
@@ -190,7 +189,7 @@ LIMIT
 	).Scan(&raw.id, &raw.name, &raw.price, &raw.publishedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.Product{}, tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
+			return domain.Product{}, errors.Join(portout.ErrDataNotFound, err)
 		}
 
 		span.RecordError(err)
@@ -200,7 +199,7 @@ LIMIT
 			slog.Any("error", err),
 		)
 
-		return domain.Product{}, tracerr.Wrap(err)
+		return domain.Product{}, err
 	}
 
 	return domain.NewProduct(
@@ -251,7 +250,7 @@ WHERE
 			slog.Any("error", err),
 		)
 
-		return domain.Product{}, tracerr.Wrap(err)
+		return domain.Product{}, err
 	}
 
 	p.PublishedAt = publishedAt
@@ -290,7 +289,7 @@ RETURNING id;
 			slog.Any("error", err),
 		)
 
-		return domain.Product{}, tracerr.Wrap(err)
+		return domain.Product{}, err
 	}
 
 	return repo.FindByID(ctx, tx, domid.ProductID(strconv.FormatInt(id, 10)))

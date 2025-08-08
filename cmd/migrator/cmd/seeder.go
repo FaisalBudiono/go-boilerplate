@@ -5,8 +5,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/db"
 	"context"
 	"fmt"
-
-	"github.com/ztrue/tracerr"
 )
 
 func DBSeed() {
@@ -17,24 +15,6 @@ func DBSeed() {
 		if err != nil {
 			fmt.Println("Running seeder FAILED...")
 			fmt.Printf("Reason:\n%s", err)
-
-			fmt.Printf("\nTraces:\n")
-
-			i := 0
-			stacks := tracerr.StackTrace(err)
-
-			for len(stacks) > 0 {
-				for _, s := range stacks {
-					fmt.Println(s.String())
-
-					i++
-				}
-
-				err = tracerr.Unwrap((err))
-				stacks = tracerr.StackTrace(err)
-			}
-
-			return
 		}
 
 		fmt.Println("Running seeder SUCCESS...")

@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/ztrue/tracerr"
 )
 
 func ValidateStruct(
@@ -19,7 +18,7 @@ func ValidateStruct(
 
 	var valErr validator.ValidationErrors
 	if !errors.As(err, &valErr) {
-		return nil, tracerr.Wrap(err)
+		return nil, err
 	}
 
 	errMsgs := make(map[string][]domain.VerboseError, 0)

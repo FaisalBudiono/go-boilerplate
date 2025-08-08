@@ -7,7 +7,6 @@ import (
 	"errors"
 
 	"github.com/labstack/echo/v4"
-	"github.com/ztrue/tracerr"
 )
 
 func Bind(
@@ -20,7 +19,7 @@ func Bind(
 
 	var jsonErr *json.UnmarshalTypeError
 	if !errors.As(err, &jsonErr) {
-		return nil, tracerr.Wrap(err)
+		return nil, err
 	}
 
 	m := make(map[string][]domain.VerboseError, 0)

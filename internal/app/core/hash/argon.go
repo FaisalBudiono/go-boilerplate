@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ztrue/tracerr"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -103,33 +102,33 @@ func (ap *argonParams) Verify(password, encodedHash string) (match bool, err err
 func decodeHash(encodedHash string) (p *argonParams, salt, hash []byte, err error) {
 	vals := strings.Split(encodedHash, "$")
 	if len(vals) != 6 {
-		return nil, nil, nil, tracerr.Wrap(ErrInvalidHash)
+		return nil, nil, nil, ErrInvalidHash
 	}
 
 	var version int
 	_, err = fmt.Sscanf(vals[2], "v=%d", &version)
 	if err != nil {
-		return nil, nil, nil, tracerr.Wrap(err)
+		return nil, nil, nil, errors.Join(errors.New("failed to get argon2 version"), err)
 	}
 	if version != argon2.Version {
-		return nil, nil, nil, tracerr.Wrap(ErrIncompatibleVersion)
+		return nil, nil, nil, ErrIncompatibleVersion
 	}
 
 	p = &argonParams{}
 	_, err = fmt.Sscanf(vals[3], "m=%d,t=%d,p=%d", &p.memory, &p.iterations, &p.parallelism)
 	if err != nil {
-		return nil, nil, nil, tracerr.Wrap(err)
+		return nil, nil, nil, errors.Join(errors.New("failed to parse argon2 param"), err)
 	}
 
 	salt, err = base64.RawStdEncoding.Strict().DecodeString(vals[4])
 	if err != nil {
-		return nil, nil, nil, tracerr.Wrap(err)
+		return nil, nil, nil, errors.Join(errors.New("failed to decode argon2 salt"), err)
 	}
 	p.saltLength = uint32(len(salt))
 
 	hash, err = base64.RawStdEncoding.Strict().DecodeString(vals[5])
 	if err != nil {
-		return nil, nil, nil, tracerr.Wrap(err)
+		return nil, nil, nil, errors.Join(errors.New("failed to decode argon2 hash"), err)
 	}
 	p.keyLength = uint32(len(hash))
 
@@ -140,7 +139,7 @@ func generateRandomBytes(n uint32) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
 	if err != nil {
-		return nil, tracerr.Wrap(err)
+		return nil, errors.Join(errors.New("failed to generate random bytes"), err)
 	}
 
 	return b, nil

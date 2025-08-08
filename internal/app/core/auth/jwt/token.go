@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/ztrue/tracerr"
 )
 
 var (
@@ -50,7 +49,7 @@ func (s *userSigner) Sign(u domain.UserTokenInfo) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString(s.key)
 	if err != nil {
-		return "", tracerr.Wrap(err)
+		return "", errors.Join(errors.New("failed to signed user signer"), err)
 	}
 
 	return ss, nil
@@ -62,23 +61,23 @@ func (s *userSigner) Parse(token string) (domain.UserTokenInfo, error) {
 	})
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenMalformed) {
-			return domain.UserTokenInfo{}, tracerr.Wrap(ErrTokenMalformed)
+			return domain.UserTokenInfo{}, (ErrTokenMalformed)
 		}
 
 		if errors.Is(err, jwt.ErrSignatureInvalid) {
-			return domain.UserTokenInfo{}, tracerr.Wrap(ErrSignatureInvalid)
+			return domain.UserTokenInfo{}, (ErrSignatureInvalid)
 		}
 
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return domain.UserTokenInfo{}, tracerr.Wrap(ErrTokenExpired)
+			return domain.UserTokenInfo{}, (ErrTokenExpired)
 		}
 
-		return domain.UserTokenInfo{}, tracerr.Wrap(err)
+		return domain.UserTokenInfo{}, errors.Join(errors.New("failed to parse claims"), err)
 	}
 
 	claims, ok := tok.Claims.(*userClaims)
 	if !ok {
-		return domain.UserTokenInfo{}, tracerr.New("Failed to fetch claims")
+		return domain.UserTokenInfo{}, errors.New("Failed to fetch claims")
 	}
 
 	return domain.NewUserBasicInfo(domid.UserID(claims.ID)), nil
