@@ -1,19 +1,18 @@
 package domain
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"time"
 )
 
 type Product struct {
-	ID          domid.ProductID
+	ID          string
 	Name        string
 	Price       int64
 	PublishedAt *time.Time
 }
 
 func NewProduct(
-	id domid.ProductID,
+	id string,
 	name string,
 	price int64,
 	publishedAt *time.Time,

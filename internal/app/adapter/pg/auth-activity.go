@@ -4,7 +4,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"database/sql"
@@ -64,9 +63,10 @@ RETURNING user_id
 	return nil
 }
 
+// LastActivityByPayload will return user ID
 func (repo *AuthActivity) LastActivityByPayload(
 	ctx context.Context, tx portout.DBTX, payload string,
-) (domid.UserID, error) {
+) (string, error) {
 	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.AuthActivity.LastActivityByPayload")
 	defer span.End()
 
@@ -108,7 +108,7 @@ RETURNING user_id
 		return "", err
 	}
 
-	return domid.UserID(userID), nil
+	return userID, nil
 }
 
 func (repo *AuthActivity) Save(

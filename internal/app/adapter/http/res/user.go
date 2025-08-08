@@ -18,7 +18,7 @@ func User(u domain.User) response[user] {
 
 	return response[user]{
 		Data: user{
-			ID:          string(u.ID),
+			ID:          u.ID,
 			Name:        u.Name,
 			PhoneNumber: u.PhoneNumber,
 			Email:       u.Email,

@@ -4,7 +4,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"fmt"
@@ -15,14 +14,15 @@ import (
 
 type Role struct{}
 
+// ByUserIDs will return map[userID][]Role from slice of userIDs
 func (repo *Role) ByUserIDs(
-	ctx context.Context, tx portout.DBTX, ids []domid.UserID,
-) (map[domid.UserID][]domain.Role, error) {
+	ctx context.Context, tx portout.DBTX, ids []string,
+) (map[string][]domain.Role, error) {
 	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.Role.ByUserIDs")
 	defer span.End()
 
 	if len(ids) == 0 {
-		return make(map[domid.UserID][]domain.Role), nil
+		return make(map[string][]domain.Role), nil
 	}
 
 	monitoring.Logger().InfoContext(ctx, "input",
@@ -68,7 +68,7 @@ ORDER BY
 	}
 	defer rows.Close()
 
-	rolesMap := make(map[domid.UserID][]domain.Role)
+	rolesMap := make(map[string][]domain.Role)
 	for rows.Next() {
 		var userID, role string
 
@@ -84,14 +84,14 @@ ORDER BY
 			return nil, err
 		}
 
-		rolesMap[domid.UserID(userID)] = append(rolesMap[domid.UserID(userID)], domain.Role(role))
+		rolesMap[userID] = append(rolesMap[userID], domain.Role(role))
 	}
 
 	return rolesMap, nil
 }
 
 func (repo *Role) GetByUserID(
-	ctx context.Context, tx portout.DBTX, id domid.UserID,
+	ctx context.Context, tx portout.DBTX, id string,
 ) ([]domain.Role, error) {
 	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.Role.GetByUserID")
 	defer span.End()

@@ -4,7 +4,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
@@ -48,7 +47,7 @@ func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
 		return domain.Token{}, err
 	}
 
-	accessToken, err := srv.jwtUserSigner.Sign(domain.NewUserBasicInfo(domid.UserID(userID)))
+	accessToken, err := srv.jwtUserSigner.Sign(domain.NewUserBasicInfo(userID))
 	if err != nil {
 		return domain.Token{}, err
 	}

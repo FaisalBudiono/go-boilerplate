@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"errors"
 	"time"
 
@@ -80,5 +79,5 @@ func (s *userSigner) Parse(token string) (domain.UserTokenInfo, error) {
 		return domain.UserTokenInfo{}, errors.New("Failed to fetch claims")
 	}
 
-	return domain.NewUserBasicInfo(domid.UserID(claims.ID)), nil
+	return domain.NewUserBasicInfo(claims.ID), nil
 }

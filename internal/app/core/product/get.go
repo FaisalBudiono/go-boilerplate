@@ -4,7 +4,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"context"
 	"database/sql"
 	"errors"
@@ -31,7 +30,7 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 	}
 	monitoring.Logger().InfoContext(ctx, "input", logVals...)
 
-	p, err := srv.forceFindProductByID(ctx, domid.ProductID(productID))
+	p, err := srv.forceFindProductByID(ctx, productID)
 	if err != nil {
 		return domain.Product{}, err
 	}
@@ -48,7 +47,8 @@ func (srv *Product) Get(req inputGet) (domain.Product, error) {
 	return p, nil
 }
 
-func (srv *Product) forceFindProductByID(ctx context.Context, id domid.ProductID) (domain.Product, error) {
+// forceFindProductByID will find [domain.Product] by its ID
+func (srv *Product) forceFindProductByID(ctx context.Context, id string) (domain.Product, error) {
 	p, err := srv.productRepo.FindByID(ctx, srv.db, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

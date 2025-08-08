@@ -4,7 +4,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"database/sql"
@@ -17,12 +16,14 @@ type User struct {
 }
 
 type resultRoleMap struct {
-	res map[domid.UserID][]domain.Role
+	res map[string][]domain.Role
 	err error
 }
 
+// FindByID will find [domain.User] by its ID
+//
 // Not safe for transactions
-func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
+func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id string) (domain.User, error) {
 	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.User.findByID")
 	defer span.End()
 
@@ -32,7 +33,7 @@ func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID
 
 	chanRoleRes := make(chan resultRoleMap)
 	go func() {
-		rMap, err := repo.r.ByUserIDs(ctx, tx, []domid.UserID{id})
+		rMap, err := repo.r.ByUserIDs(ctx, tx, []string{id})
 		if err != nil {
 			cancel(err)
 		}
@@ -83,12 +84,12 @@ LIMIT
 	}
 
 	return domain.NewUser(
-		domid.UserID(raw.id),
+		raw.id,
 		raw.name,
 		raw.phoneNumber,
 		raw.email,
 		raw.password,
-		resRoleMap.res[domid.UserID(raw.id)],
+		resRoleMap.res[raw.id],
 	), nil
 }
 
@@ -134,13 +135,13 @@ LIMIT
 		return domain.User{}, err
 	}
 
-	roles, err := repo.r.GetByUserID(ctx, tx, domid.UserID(raw.id))
+	roles, err := repo.r.GetByUserID(ctx, tx, raw.id)
 	if err != nil {
 		return domain.User{}, err
 	}
 
 	return domain.NewUser(
-		domid.UserID(raw.id),
+		raw.id,
 		raw.name,
 		raw.phoneNumber,
 		raw.email,

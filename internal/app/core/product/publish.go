@@ -4,7 +4,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"context"
 	"log/slog"
 	"slices"
@@ -33,7 +32,7 @@ func (srv *Product) Publish(req inputPublish) (domain.Product, error) {
 		return domain.Product{}, ErrNotEnoughPermission
 	}
 
-	p, err := srv.forceFindProductByID(ctx, domid.ProductID(productID))
+	p, err := srv.forceFindProductByID(ctx, productID)
 	if err != nil {
 		return domain.Product{}, err
 	}

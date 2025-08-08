@@ -4,7 +4,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout/productoptions"
 	"context"
@@ -12,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strconv"
 	"time"
 
 	"go.opentelemetry.io/otel/codes"
@@ -144,7 +142,7 @@ OFFSET $2
 		products = append(
 			products,
 			domain.NewProduct(
-				domid.ProductID(raw.id), raw.name, raw.price, raw.publishedAt,
+				raw.id, raw.name, raw.price, raw.publishedAt,
 			),
 		)
 	}
@@ -152,8 +150,9 @@ OFFSET $2
 	return products, total, nil
 }
 
+// FindByID will find [domain.Product] by its ID
 func (repo *Product) FindByID(
-	ctx context.Context, tx portout.DBTX, id domid.ProductID,
+	ctx context.Context, tx portout.DBTX, id string,
 ) (domain.Product, error) {
 	ctx, span := monitoring.Tracer().Start(ctx, "db.pg.Product.FindByID")
 	defer span.End()
@@ -203,7 +202,7 @@ LIMIT
 	}
 
 	return domain.NewProduct(
-		domid.ProductID(raw.id),
+		raw.id,
 		raw.name,
 		raw.price,
 		raw.publishedAt,
@@ -269,7 +268,7 @@ func (repo *Product) Save(
 		slog.Int64("price", price),
 	)
 
-	var id int64
+	var id string
 	err := tx.QueryRowContext(
 		ctx,
 		`
@@ -292,7 +291,7 @@ RETURNING id;
 		return domain.Product{}, err
 	}
 
-	return repo.FindByID(ctx, tx, domid.ProductID(strconv.FormatInt(id, 10)))
+	return repo.FindByID(ctx, tx, id)
 }
 
 func NewProduct() *Product {
