@@ -1,10 +1,8 @@
 package pg
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/logutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otel/spanattr"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
 	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
@@ -18,7 +16,7 @@ import (
 	"time"
 
 	"github.com/ztrue/tracerr"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type Product struct{}
@@ -29,7 +27,7 @@ func (repo *Product) GetAll(
 	offset, limit int64,
 	qo ...productoptions.QueryOption,
 ) ([]domain.Product, int64, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.getAll")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Product.GetAll")
 	defer span.End()
 
 	opts := productoptions.NewQueryOpt()
@@ -37,12 +35,10 @@ func (repo *Product) GetAll(
 		qo(opts)
 	}
 
-	monitorings.Logger().InfoContext(
-		ctx,
-		"input",
-		slog.String("opts", fmt.Sprintf("%#v", opts)),
+	monitorings.Logger().InfoContext(ctx, "input",
 		slog.Int64("offset", offset),
 		slog.Int64("limit", limit),
+		slog.Any("opts", opts),
 	)
 
 	publishQuery := ""
@@ -68,8 +64,6 @@ ORDER BY
 		publishQuery,
 	)
 
-	span.AddEvent("building base Query", trace.WithAttributes(spanattr.Query(baseQ)))
-
 	var total int64
 	totalQuery := fmt.Sprintf(
 		`
@@ -83,10 +77,19 @@ FROM
 		baseQ,
 	)
 
-	span.AddEvent("fetching total", trace.WithAttributes(spanattr.Query(totalQuery)))
+	monitorings.Logger().DebugContext(ctx, "total query",
+		slog.String("query", queryutil.Clean(totalQuery)),
+	)
 
 	err := tx.QueryRowContext(ctx, totalQuery).Scan(&total)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to query total")
+
+		monitorings.Logger().ErrorContext(ctx, "failed to query total",
+			slog.Any("error", err),
+		)
+
 		return nil, 0, tracerr.Wrap(err)
 	}
 
@@ -99,10 +102,21 @@ OFFSET $2
 		baseQ,
 	)
 
-	span.AddEvent("fetching real data", trace.WithAttributes(spanattr.Query(query)))
+	monitorings.Logger().DebugContext(ctx, "query",
+		slog.String("query", queryutil.Clean(query)),
+		slog.Int64("limit", limit),
+		slog.Int64("offset", offset),
+	)
 
 	rows, err := tx.QueryContext(ctx, query, limit, offset)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to query")
+
+		monitorings.Logger().ErrorContext(ctx, "failed to query",
+			slog.Any("error", err),
+		)
+
 		return nil, 0, tracerr.Wrap(err)
 	}
 	defer rows.Close()
@@ -118,23 +132,36 @@ OFFSET $2
 
 		err = rows.Scan(&raw.id, &raw.name, &raw.price, &raw.publishedAt)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "failed to scan row")
+
+			monitorings.Logger().ErrorContext(ctx, "failed to scan row",
+				slog.Any("error", err),
+			)
+
 			return nil, 0, tracerr.Wrap(err)
 		}
 
 		products = append(
 			products,
-			domain.NewProduct(domid.ProductID(raw.id), raw.name, raw.price, raw.publishedAt),
+			domain.NewProduct(
+				domid.ProductID(raw.id), raw.name, raw.price, raw.publishedAt,
+			),
 		)
 	}
 
 	return products, total, nil
 }
 
-func (repo *Product) FindByID(ctx context.Context, tx portout.DBTX, id domid.ProductID) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.findByID")
+func (repo *Product) FindByID(
+	ctx context.Context, tx portout.DBTX, id domid.ProductID,
+) (domain.Product, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Product.FindByID")
 	defer span.End()
 
-	monitorings.Logger().InfoContext(ctx, "input", slog.String("id", string(id)))
+	monitorings.Logger().InfoContext(ctx, "input",
+		slog.Any("id", id),
+	)
 
 	var raw struct {
 		id          string
@@ -166,7 +193,13 @@ LIMIT
 			return domain.Product{}, tracerr.CustomError(portout.ErrDataNotFound, tracerr.StackTrace(err))
 		}
 
-		otel.SpanLogError(span, err, "failed to find product")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to query product")
+
+		monitorings.Logger().ErrorContext(ctx, "failed to query product",
+			slog.Any("error", err),
+		)
+
 		return domain.Product{}, tracerr.Wrap(err)
 	}
 
@@ -178,14 +211,16 @@ LIMIT
 	), nil
 }
 
-func (repo *Product) Publish(ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.publish")
+func (repo *Product) Publish(
+	ctx context.Context, tx portout.DBTX, p domain.Product, shouldPublish bool,
+) (domain.Product, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Product.Publish")
 	defer span.End()
 
-	slogVals := make([]any, 0)
-	slogVals = append(slogVals, slog.Bool("shouldPublish", shouldPublish))
-	slogVals = append(slogVals, logutil.SlogProduct("input.", p)...)
-	monitorings.Logger().InfoContext(ctx, "input", slogVals...)
+	monitorings.Logger().InfoContext(ctx, "input",
+		slog.Bool("shouldPublish", shouldPublish),
+		slog.Any("product", p),
+	)
 
 	now := time.Now().UTC()
 
@@ -209,6 +244,13 @@ WHERE
 		p.ID,
 	)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to update published_at")
+
+		monitorings.Logger().ErrorContext(ctx, "failed to update published_at",
+			slog.Any("error", err),
+		)
+
 		return domain.Product{}, tracerr.Wrap(err)
 	}
 
@@ -217,11 +259,16 @@ WHERE
 	return p, nil
 }
 
-func (repo *Product) Save(ctx context.Context, tx portout.DBTX, name string, price int64) (domain.Product, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.product.save")
+func (repo *Product) Save(
+	ctx context.Context, tx portout.DBTX, name string, price int64,
+) (domain.Product, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Product.Save")
 	defer span.End()
 
-	monitorings.Logger().InfoContext(ctx, "input", slog.String("name", name), slog.Int64("price", price))
+	monitorings.Logger().InfoContext(ctx, "input",
+		slog.String("name", name),
+		slog.Int64("price", price),
+	)
 
 	var id int64
 	err := tx.QueryRowContext(
@@ -236,6 +283,13 @@ RETURNING id;
 		name, price,
 	).Scan(&id)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to query")
+
+		monitorings.Logger().ErrorContext(ctx, "failed to query",
+			slog.Any("error", err),
+		)
+
 		return domain.Product{}, tracerr.Wrap(err)
 	}
 

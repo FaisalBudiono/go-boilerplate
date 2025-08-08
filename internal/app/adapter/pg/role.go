@@ -11,22 +11,23 @@ import (
 	"log/slog"
 
 	"github.com/ztrue/tracerr"
+	"go.opentelemetry.io/otel/codes"
 )
 
 type Role struct{}
 
-func (repo *Role) ByUserIDs(ctx context.Context, tx portout.DBTX, ids []domid.UserID) (map[domid.UserID][]domain.Role, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.role.byUserIDs")
+func (repo *Role) ByUserIDs(
+	ctx context.Context, tx portout.DBTX, ids []domid.UserID,
+) (map[domid.UserID][]domain.Role, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Role.ByUserIDs")
 	defer span.End()
 
 	if len(ids) == 0 {
-		return nil, tracerr.New("User IDs is empty")
+		return make(map[domid.UserID][]domain.Role), nil
 	}
 
-	monitorings.Logger().InfoContext(
-		ctx,
-		"input",
-		slog.String("ids", fmt.Sprintf("%#v", ids)),
+	monitorings.Logger().InfoContext(ctx, "input",
+		slog.Any("ids", ids),
 	)
 
 	query := fmt.Sprintf(
@@ -50,26 +51,37 @@ ORDER BY
 		args[i] = ids[i]
 	}
 
-	monitorings.Logger().InfoContext(
-		ctx,
-		"making query",
-		slog.String("query", query),
-		slog.String("args", fmt.Sprintf("%#v", args)),
+	monitorings.Logger().DebugContext(ctx, "query",
+		slog.String("query", queryutil.Clean(query)),
+		slog.Any("args", args),
 	)
 
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to query")
+
+		monitorings.Logger().ErrorContext(ctx, "failed to query",
+			slog.Any("error", err),
+		)
+
 		return nil, tracerr.Wrap(err)
 	}
 	defer rows.Close()
 
 	rolesMap := make(map[domid.UserID][]domain.Role)
-
 	for rows.Next() {
 		var userID, role string
 
 		err = rows.Scan(&userID, &role)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "failed to scan row")
+
+			monitorings.Logger().ErrorContext(ctx, "failed to scan row",
+				slog.Any("error", err),
+			)
+
 			return nil, tracerr.Wrap(err)
 		}
 
@@ -79,11 +91,13 @@ ORDER BY
 	return rolesMap, nil
 }
 
-func (repo *Role) RefetchedRoles(ctx context.Context, tx portout.DBTX, id domid.UserID) ([]domain.Role, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.role.refetchedRoles")
+func (repo *Role) GetByUserID(
+	ctx context.Context, tx portout.DBTX, id domid.UserID,
+) ([]domain.Role, error) {
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.Role.GetByUserID")
 	defer span.End()
 
-	monitorings.Logger().InfoContext(ctx, "input", slog.String("user.id", string(id)))
+	monitorings.Logger().InfoContext(ctx, "input", slog.Any("id", id))
 
 	rows, err := tx.QueryContext(ctx, `
 SELECT
@@ -99,21 +113,34 @@ ORDER BY
 		id,
 	)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to query")
+
+		monitorings.Logger().ErrorContext(ctx, "failed to query",
+			slog.Any("error", err),
+		)
+
 		return nil, tracerr.Wrap(err)
 	}
 	defer rows.Close()
 
 	roles := make([]domain.Role, 0)
-
 	for rows.Next() {
-		var role string
+		var role domain.Role
 
 		err = rows.Scan(&role)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "failed to scan row")
+
+			monitorings.Logger().ErrorContext(ctx, "failed to scan row",
+				slog.Any("error", err),
+			)
+
 			return nil, tracerr.Wrap(err)
 		}
 
-		roles = append(roles, domain.Role(role))
+		roles = append(roles, role)
 	}
 
 	return roles, nil

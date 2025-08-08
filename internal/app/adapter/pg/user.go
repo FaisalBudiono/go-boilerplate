@@ -23,9 +23,9 @@ type resultRoleMap struct {
 	err error
 }
 
-// FindByID is not safe for *[sql.Tx]
+// Not safe for transactions
 func (repo *User) FindByID(ctx context.Context, tx portout.DBTX, id domid.UserID) (domain.User, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.user.findByID")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.User.findByID")
 	defer span.End()
 
 	monitorings.Logger().InfoContext(ctx, "input", slog.String("id", string(id)))
@@ -56,7 +56,7 @@ WHERE
 LIMIT
     1
 `
-	monitorings.Logger().InfoContext(ctx, "making query", slog.String("query", q))
+	monitorings.Logger().DebugContext(ctx, "making query", slog.String("query", q))
 
 	var raw struct {
 		id          string
@@ -94,9 +94,9 @@ LIMIT
 	), nil
 }
 
-// FindByEmail is not safe for *[sql.Tx]
+// FindByEmail not safe for transactions
 func (repo *User) FindByEmail(ctx context.Context, tx portout.DBTX, email string) (domain.User, error) {
-	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.user.findByEmail")
+	ctx, span := monitorings.Tracer().Start(ctx, "db.pg.User.findByEmail")
 	defer span.End()
 
 	monitorings.Logger().InfoContext(ctx, "input", slog.String("email", email))
@@ -136,7 +136,7 @@ LIMIT
 		return domain.User{}, tracerr.Wrap(err)
 	}
 
-	roles, err := repo.r.RefetchedRoles(ctx, tx, domid.UserID(raw.id))
+	roles, err := repo.r.GetByUserID(ctx, tx, domid.UserID(raw.id))
 	if err != nil {
 		return domain.User{}, err
 	}
