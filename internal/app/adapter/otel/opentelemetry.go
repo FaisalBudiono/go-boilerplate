@@ -11,6 +11,7 @@ import (
 
 	"go.opentelemetry.io/contrib/processors/minsev"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
@@ -150,9 +151,8 @@ func (c *config) newTraceProvider() (*trace.TracerProvider, error) {
 	return traceProvider, nil
 }
 
-// @todo add configurable env for trace and log exporter so it can sent to turn on the opentelemetry one by one
 func (c *config) newTraceExporter() (trace.SpanExporter, error) {
-	endpoint := app.ENV().OtelEndpoint
+	endpoint := app.ENV().Otel.TraceURL
 
 	if endpoint == "" {
 		return stdouttrace.New(
@@ -183,7 +183,7 @@ func (c *config) newMeterProvider() (*metric.MeterProvider, error) {
 }
 
 func (c *config) newMetricExporter() (metric.Exporter, error) {
-	endpoint := app.ENV().OtelEndpoint
+	endpoint := app.ENV().Otel.MetricURL
 
 	if endpoint == "" {
 		return stdoutmetric.New()
@@ -213,8 +213,17 @@ func (c *config) newLoggerProvider() (*log.LoggerProvider, error) {
 }
 
 func (c *config) newLogExporter() (log.Exporter, error) {
-	return stdoutlog.New(
-		stdoutlog.WithWriter(c.logLogger),
+	endpoint := app.ENV().Otel.LogURL
+
+	if endpoint == "" {
+		return stdoutlog.New(
+			stdoutlog.WithWriter(c.logLogger),
+		)
+	}
+
+	return otlploghttp.New(
+		c.ctx,
+		otlploghttp.WithEndpointURL(endpoint),
 	)
 }
 

@@ -32,6 +32,7 @@ require (
 require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	go.opentelemetry.io/contrib/processors/minsev v0.10.0
+	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.13.0
 )
 
 require github.com/cenkalti/backoff/v5 v5.0.2 // indirect

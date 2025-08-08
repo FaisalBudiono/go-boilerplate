@@ -30,7 +30,11 @@ var logLevels = []LogLevel{
 type envConfig struct {
 	AppName string `envconfig:"APP_NAME" default:"go-boilerplate"`
 
-	OtelEndpoint string `envconfig:"OTLP_ENDPOINT" required:"false"`
+	Otel struct {
+		LogURL    string `envconfig:"OTLP_LOG_ENDPOINT" required:"false"`
+		TraceURL  string `envconfig:"OTLP_TRACE_ENDPOINT" required:"false"`
+		MetricURL string `envconfig:"OTLP_METRIC_ENDPOINT" required:"false"`
+	}
 
 	PgUser     string `envconfig:"POSTGRES_USER" required:"true"`
 	PgPassword string `envconfig:"POSTGRES_PASSWORD" required:"true"`
