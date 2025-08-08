@@ -54,7 +54,10 @@ func Get(
 				)
 			}
 			if !errors.Is(err, req.ErrNoTokenProvided) {
-				otel.SpanLogError(span, err, "error when parsing token")
+				otel.SpanLogError(span, err,
+					otel.WithErrorLog(ctx),
+					otel.WithMessage("error when parsing token"),
+				)
 				return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 			}
 		}
@@ -79,7 +82,10 @@ func Get(
 				)
 			}
 
-			otel.SpanLogError(span, err, "error caught in service")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error caught in service"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

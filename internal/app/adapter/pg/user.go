@@ -74,7 +74,10 @@ LIMIT
 			return domain.User{}, errors.Join(portout.ErrDataNotFound, err)
 		}
 
-		otel.SpanLogError(span, err, "failed to find user")
+		otel.SpanLogError(span, err,
+			otel.WithErrorLog(ctx),
+			otel.WithMessage("failed to find user"),
+		)
 		return domain.User{}, err
 	}
 
@@ -131,7 +134,10 @@ LIMIT
 			return domain.User{}, errors.Join(portout.ErrDataNotFound, err)
 		}
 
-		otel.SpanLogError(span, err, "failed to find user")
+		otel.SpanLogError(span, err,
+			otel.WithErrorLog(ctx),
+			otel.WithMessage("failed to find user"),
+		)
 		return domain.User{}, err
 	}
 

@@ -28,7 +28,10 @@ func Userinfo(srv *auth.Auth) echo.HandlerFunc {
 				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
 			}
 
-			otel.SpanLogError(span, err, "error when parsing token")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error when parsing token"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

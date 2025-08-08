@@ -106,7 +106,10 @@ func GetAll(
 				)
 			}
 			if !errors.Is(err, req.ErrNoTokenProvided) {
-				otel.SpanLogError(span, err, "error when parsing token")
+				otel.SpanLogError(span, err,
+					otel.WithErrorLog(ctx),
+					otel.WithMessage("error when parsing token"),
+				)
 				return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 			}
 		}
@@ -127,13 +130,19 @@ func GetAll(
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
-			otel.SpanLogError(span, err, "error when binding request")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error when binding request"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
 		products, pg, err := srv.GetAll(i)
 		if err != nil {
-			otel.SpanLogError(span, err, "error caught in service")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error caught in service"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

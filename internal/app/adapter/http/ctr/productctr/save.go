@@ -27,7 +27,7 @@ type reqSaveProduct struct {
 }
 
 func (r *reqSaveProduct) Bind(c echo.Context) error {
-	_, span := monitoring.Tracer().Start(r.ctx, "http.req.product.save")
+	ctx, span := monitoring.Tracer().Start(r.ctx, "http.req.product.save")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -37,7 +37,10 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 		"price": "integer",
 	})
 	if err != nil {
-		otel.SpanLogError(span, err, "failed to bind")
+		otel.SpanLogError(span, err,
+			otel.WithErrorLog(ctx),
+			otel.WithMessage("failed to bind"),
+		)
 		return err
 	}
 	errMsgs.AppendDomMap(validationErr)
@@ -47,7 +50,10 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 		"BodyPrice": "price",
 	})
 	if err != nil {
-		otel.SpanLogError(span, err, "unhandled validator error")
+		otel.SpanLogError(span, err,
+			otel.WithErrorLog(ctx),
+			otel.WithMessage("unhandled validator error"),
+		)
 
 		return err
 	}
@@ -93,7 +99,10 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
 			}
 
-			otel.SpanLogError(span, err, "error when parsing token")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error when parsing token"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
@@ -108,7 +117,10 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
-			otel.SpanLogError(span, err, "error when binding request")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error when binding request"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
@@ -133,7 +145,10 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				)
 			}
 
-			otel.SpanLogError(span, err, "error caught in service")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error caught in service"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

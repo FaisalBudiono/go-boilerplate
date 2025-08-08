@@ -21,7 +21,7 @@ type reqAuthRefreshToken struct {
 }
 
 func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
-	_, span := monitoring.Tracer().Start(r.ctx, "http.req.auth.refreshToken")
+	ctx, span := monitoring.Tracer().Start(r.ctx, "http.req.auth.refreshToken")
 	defer span.End()
 
 	errMsgs := make(res.VerboseMetaMsgs, 0)
@@ -30,7 +30,10 @@ func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
 		"refreshToken": "string",
 	})
 	if err != nil {
-		otel.SpanLogError(span, err, "failed to bind")
+		otel.SpanLogError(span, err,
+			otel.WithErrorLog(ctx),
+			otel.WithMessage("failed to bind"),
+		)
 		return err
 	}
 	errMsgs.AppendDomMap(validationErr)
@@ -39,7 +42,10 @@ func (r *reqAuthRefreshToken) Bind(c echo.Context) error {
 		"BodyRefreshToken": "refreshToken",
 	})
 	if err != nil {
-		otel.SpanLogError(span, err, "unhandled validator error")
+		otel.SpanLogError(span, err,
+			otel.WithErrorLog(ctx),
+			otel.WithMessage("unhandled validator error"),
+		)
 		return err
 	}
 	errMsgs.AppendDomMap(validationErr)
@@ -74,7 +80,10 @@ func Refresh(srv *auth.Auth) echo.HandlerFunc {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
-			otel.SpanLogError(span, err, "binding request error")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("binding request error"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 
@@ -87,7 +96,10 @@ func Refresh(srv *auth.Auth) echo.HandlerFunc {
 				)
 			}
 
-			otel.SpanLogError(span, err, "error caught in service")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("error caught in service"),
+			)
 			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
 		}
 

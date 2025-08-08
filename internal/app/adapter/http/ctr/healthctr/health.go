@@ -32,7 +32,10 @@ func Health(srv *ht.Healthcheck) echo.HandlerFunc {
 			ctx: ctx,
 		})
 		if err != nil {
-			otel.SpanLogError(span, err, "healthcheck error")
+			otel.SpanLogError(span, err,
+				otel.WithErrorLog(ctx),
+				otel.WithMessage("healthcheck error"),
+			)
 
 			return c.JSON(http.StatusInternalServerError, healthRes{
 				Ok:  false,
