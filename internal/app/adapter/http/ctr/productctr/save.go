@@ -30,9 +30,9 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 	ctx, span := monitoring.Tracer().Start(r.ctx, "http.req.product.save")
 	defer span.End()
 
-	errMsgs := make(res.VerboseMetaMsgs, 0)
+	errMsgs := make(res.OLDVerboseMetaMsgs, 0)
 
-	validationErr, err := httputil.Bind(c, r, map[string]string{
+	validationErr, err := httputil.BindOld(c, r, map[string]string{
 		"name":  "string",
 		"price": "integer",
 	})
@@ -60,7 +60,7 @@ func (r *reqSaveProduct) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessable(errMsgs)
+		return res.OLDNewErrorUnprocessable(errMsgs)
 	}
 
 	r.priceInCents = r.BodyPrice * 100
@@ -96,14 +96,14 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				errors.Is(err, req.ErrTokenExpired)
 
 			if isTokenNotProvidedErr {
-				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
+				return c.JSON(http.StatusUnauthorized, res.OLDNewError(err.Error(), errcode.AuthUnauthorized))
 			}
 
 			otel.SpanLogError(span, err,
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error when parsing token"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		input := &reqSaveProduct{
@@ -113,7 +113,7 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 
 		err = input.Bind(c)
 		if err != nil {
-			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
+			if unErr, ok := err.(*res.OLDUnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
@@ -121,7 +121,7 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error when binding request"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		p, err := srv.Save(input)
@@ -129,19 +129,19 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 			if errors.Is(err, product.ErrNotEnoughPermission) {
 				return c.JSON(
 					http.StatusForbidden,
-					res.NewError(err.Error(), errcode.AuthPermissionInsufficient),
+					res.OLDNewError(err.Error(), errcode.AuthPermissionInsufficient),
 				)
 			}
 			if errors.Is(err, product.ErrEmptyName) {
 				return c.JSON(
 					http.StatusConflict,
-					res.NewError(err.Error(), errcode.ProductEmptyName),
+					res.OLDNewError(err.Error(), errcode.ProductEmptyName),
 				)
 			}
 			if errors.Is(err, product.ErrNegativePrice) {
 				return c.JSON(
 					http.StatusConflict,
-					res.NewError(err.Error(), errcode.ProductNegativePrice),
+					res.OLDNewError(err.Error(), errcode.ProductNegativePrice),
 				)
 			}
 
@@ -149,7 +149,7 @@ func Save(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error caught in service"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		return c.JSON(http.StatusCreated, res.Product(p))

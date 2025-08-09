@@ -31,14 +31,14 @@ func (r *reqGetAllProduct) Bind(c echo.Context) error {
 	_, span := monitoring.Tracer().Start(r.ctx, "http.req.product.getAll")
 	defer span.End()
 
-	errMsgs := make(res.VerboseMetaMsgs, 0)
+	errMsgs := make(res.OLDVerboseMetaMsgs, 0)
 
 	rawPage := c.QueryParam("page")
 	if rawPage == "" {
 		rawPage = "0"
 	}
 
-	integerErr := res.NewVerboseMeta("integer", "")
+	integerErr := res.OLDNewVerboseMeta("integer", "")
 
 	page, err := strconv.ParseInt(rawPage, 10, 64)
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *reqGetAllProduct) Bind(c echo.Context) error {
 	}
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessable(errMsgs)
+		return res.OLDNewErrorUnprocessable(errMsgs)
 	}
 
 	r.page = page
@@ -102,7 +102,7 @@ func GetAll(
 			if isTokenNotProvidedErr {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError(err.Error(), errcode.AuthUnauthorized),
+					res.OLDNewError(err.Error(), errcode.AuthUnauthorized),
 				)
 			}
 			if !errors.Is(err, req.ErrNoTokenProvided) {
@@ -110,7 +110,7 @@ func GetAll(
 					otel.WithErrorLog(ctx),
 					otel.WithMessage("error when parsing token"),
 				)
-				return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+				return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 			}
 		}
 
@@ -126,7 +126,7 @@ func GetAll(
 
 		err = i.Bind(c)
 		if err != nil {
-			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
+			if unErr, ok := err.(*res.OLDUnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
@@ -134,7 +134,7 @@ func GetAll(
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error when binding request"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		products, pg, err := srv.GetAll(i)
@@ -143,7 +143,7 @@ func GetAll(
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error caught in service"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		return c.JSON(http.StatusOK, res.ProductPaginated(products, pg))
