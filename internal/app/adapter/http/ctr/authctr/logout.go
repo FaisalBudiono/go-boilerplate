@@ -24,9 +24,9 @@ func (r *reqAuthLogout) Bind(c echo.Context) error {
 	ctx, span := monitoring.Tracer().Start(r.ctx, "http.req.auth.logout")
 	defer span.End()
 
-	errMsgs := make(res.VerboseMetaMsgs, 0)
+	errMsgs := make(res.OLDVerboseMetaMsgs, 0)
 
-	validationErr, err := httputil.Bind(c, r, map[string]string{
+	validationErr, err := httputil.BindOld(c, r, map[string]string{
 		"refreshToken": "string",
 	})
 	if err != nil {
@@ -51,7 +51,7 @@ func (r *reqAuthLogout) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessable(errMsgs)
+		return res.OLDNewErrorUnprocessable(errMsgs)
 	}
 
 	return nil
@@ -76,7 +76,7 @@ func Logout(srv *auth.Auth) echo.HandlerFunc {
 
 		err := i.Bind(c)
 		if err != nil {
-			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
+			if unErr, ok := err.(*res.OLDUnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
@@ -84,7 +84,7 @@ func Logout(srv *auth.Auth) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("binding request error"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		err = srv.Logout(i)
@@ -92,13 +92,13 @@ func Logout(srv *auth.Auth) echo.HandlerFunc {
 			if errors.Is(err, auth.ErrInvalidToken) {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError("Invalid refresh token", errcode.AuthInvalidCredentials),
+					res.OLDNewError("Invalid refresh token", errcode.AuthInvalidCredentials),
 				)
 			}
 			if errors.Is(err, auth.ErrTokenExpired) {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError("Refresh token expired", errcode.AuthInvalidCredentials),
+					res.OLDNewError("Refresh token expired", errcode.AuthInvalidCredentials),
 				)
 			}
 
@@ -106,7 +106,7 @@ func Logout(srv *auth.Auth) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error caught in service"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		return c.NoContent(http.StatusNoContent)

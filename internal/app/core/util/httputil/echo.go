@@ -9,11 +9,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Bind(
+// Deprecated: use the Bind
+func BindOld(
 	c echo.Context, input any, fieldTypes map[string]string,
-) (map[string][]domain.VerboseError, error) {
+) (map[string][]domain.OLDVerboseError, error) {
 	err := c.Bind(input)
-	if err == nil {
+	if err == nil { // err IS NIL
 		return nil, nil
 	}
 
@@ -22,11 +23,35 @@ func Bind(
 		return nil, err
 	}
 
-	m := make(map[string][]domain.VerboseError, 0)
+	m := make(map[string][]domain.OLDVerboseError, 0)
 
 	for fieldName, fieldType := range fieldTypes {
 		if jsonErr.Field == fieldName {
-			m[fieldName] = append(m[fieldName], domain.NewErrVerbose(errcode.Code(fieldType), ""))
+			m[fieldName] = append(m[fieldName], domain.OLDNewErrVerbose(errcode.Code(fieldType), ""))
+		}
+	}
+
+	return m, nil
+}
+
+func Bind(
+	c echo.Context, input any, fieldTypes map[string]string,
+) (map[string][]domain.OLDVerboseError, error) {
+	err := c.Bind(input)
+	if err == nil { // err IS NIL
+		return nil, nil
+	}
+
+	var jsonErr *json.UnmarshalTypeError
+	if !errors.As(err, &jsonErr) {
+		return nil, err
+	}
+
+	m := make(map[string][]domain.OLDVerboseError, 0)
+
+	for fieldName, fieldType := range fieldTypes {
+		if jsonErr.Field == fieldName {
+			m[fieldName] = append(m[fieldName], domain.OLDNewErrVerbose(errcode.Code(fieldType), ""))
 		}
 	}
 

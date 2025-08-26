@@ -50,7 +50,7 @@ func Get(
 			if isTokenNotProvidedErr {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError(err.Error(), errcode.AuthUnauthorized),
+					res.OLDNewError(err.Error(), errcode.AuthUnauthorized),
 				)
 			}
 			if !errors.Is(err, req.ErrNoTokenProvided) {
@@ -58,7 +58,7 @@ func Get(
 					otel.WithErrorLog(ctx),
 					otel.WithMessage("error when parsing token"),
 				)
-				return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+				return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 			}
 		}
 
@@ -78,7 +78,7 @@ func Get(
 			if errors.Is(err, product.ErrNotFound) {
 				return c.JSON(
 					http.StatusNotFound,
-					res.NewError("Product not found", errcode.ProductNotFound),
+					res.OLDNewError("Product not found", errcode.ProductNotFound),
 				)
 			}
 
@@ -86,7 +86,7 @@ func Get(
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error caught in service"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		return c.JSON(http.StatusOK, res.Product(p))

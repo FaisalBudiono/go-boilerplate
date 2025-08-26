@@ -10,7 +10,7 @@ import (
 
 func ValidateStruct(
 	input any, structFieldJson map[string]string,
-) (map[string][]domain.VerboseError, error) {
+) (map[string][]domain.OLDVerboseError, error) {
 	err := validator.New().Struct(input)
 	if err == nil {
 		return nil, nil
@@ -21,10 +21,10 @@ func ValidateStruct(
 		return nil, err
 	}
 
-	errMsgs := make(map[string][]domain.VerboseError, 0)
+	errMsgs := make(map[string][]domain.OLDVerboseError, 0)
 
 	for _, fe := range valErr {
-		vMsg := domain.NewErrVerbose(errcode.Code(fe.Tag()), "")
+		vMsg := domain.OLDNewErrVerbose(errcode.Code(fe.Tag()), "")
 
 		for fieldName, jsonFieldName := range structFieldJson {
 			if fe.Field() == fieldName {

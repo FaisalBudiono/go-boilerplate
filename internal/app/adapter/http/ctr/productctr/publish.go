@@ -31,9 +31,9 @@ func (r *reqPublishProduct) Bind(c echo.Context) error {
 	ctx, span := monitoring.Tracer().Start(r.ctx, "http.req.product.publish")
 	defer span.End()
 
-	errMsgs := make(res.VerboseMetaMsgs, 0)
+	errMsgs := make(res.OLDVerboseMetaMsgs, 0)
 
-	validationErr, err := httputil.Bind(c, r, map[string]string{
+	validationErr, err := httputil.BindOld(c, r, map[string]string{
 		"isPublish": "boolean",
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *reqPublishProduct) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessable(errMsgs)
+		return res.OLDNewErrorUnprocessable(errMsgs)
 	}
 
 	r.isPublish = *r.BodyIsPublish
@@ -96,7 +96,7 @@ func Publish(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 			if isTokenNotProvidedErr {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError(err.Error(), errcode.AuthUnauthorized),
+					res.OLDNewError(err.Error(), errcode.AuthUnauthorized),
 				)
 			}
 
@@ -104,7 +104,7 @@ func Publish(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error when parsing token"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		i := &reqPublishProduct{
@@ -115,7 +115,7 @@ func Publish(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 
 		err = i.Bind(c)
 		if err != nil {
-			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
+			if unErr, ok := err.(*res.OLDUnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
@@ -123,7 +123,7 @@ func Publish(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error when binding request"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		p, err := srv.Publish(i)
@@ -131,13 +131,13 @@ func Publish(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 			if errors.Is(err, product.ErrNotEnoughPermission) {
 				return c.JSON(
 					http.StatusForbidden,
-					res.NewError(err.Error(), errcode.AuthPermissionInsufficient),
+					res.OLDNewError(err.Error(), errcode.AuthPermissionInsufficient),
 				)
 			}
 			if errors.Is(err, product.ErrNotFound) {
 				return c.JSON(
 					http.StatusNotFound,
-					res.NewError("Product not found", errcode.ProductNotFound),
+					res.OLDNewError("Product not found", errcode.ProductNotFound),
 				)
 			}
 
@@ -145,7 +145,7 @@ func Publish(authSrv *auth.Auth, srv *product.Product) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error caught in service"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		return c.JSON(http.StatusOK, res.Product(p))

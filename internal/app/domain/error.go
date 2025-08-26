@@ -6,28 +6,28 @@ import (
 	"strings"
 )
 
-func NewErrVerbose(
+func OLDNewErrVerbose(
 	code errcode.Code,
 	message string,
-) VerboseError {
-	return VerboseError{
+) OLDVerboseError {
+	return OLDVerboseError{
 		Code:    code,
 		Message: message,
 	}
 }
 
-type VerboseError struct {
+type OLDVerboseError struct {
 	Code    errcode.Code
 	Message string
 }
 
-func (e VerboseError) Error() string {
+func (e OLDVerboseError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
-type VerboseErrorList []verboseErrorWithFieldName
+type OLDVerboseErrorList []oldverboseErrorWithFieldName
 
-func (v VerboseErrorList) Error() string {
+func (v OLDVerboseErrorList) Error() string {
 	errMsgs := make([]string, len(v))
 	for i, err := range v {
 		errMsgs[i] = err.Err.Error()
@@ -36,16 +36,16 @@ func (v VerboseErrorList) Error() string {
 	return strings.Join(errMsgs, " \n")
 }
 
-type verboseErrorWithFieldName struct {
+type oldverboseErrorWithFieldName struct {
 	FieldName string
-	Err       VerboseError
+	Err       OLDVerboseError
 }
 
-func NewVerboseErrorItem(
+func OLDNewVerboseErrorItem(
 	fieldName string,
-	err VerboseError,
-) verboseErrorWithFieldName {
-	return verboseErrorWithFieldName{
+	err OLDVerboseError,
+) oldverboseErrorWithFieldName {
+	return oldverboseErrorWithFieldName{
 		FieldName: fieldName,
 		Err:       err,
 	}

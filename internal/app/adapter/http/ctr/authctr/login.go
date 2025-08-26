@@ -21,13 +21,13 @@ type reqAuthLogin struct {
 	BodyPassword string `json:"password" validate:"required"`
 }
 
-func (r *reqAuthLogin) Bind(c echo.Context) error {
+func (r *reqAuthLogin) bindOld(c echo.Context) error {
 	ctx, span := monitoring.Tracer().Start(r.ctx, "http.req.auth.login")
 	defer span.End()
 
-	errMsgs := make(res.VerboseMetaMsgs, 0)
+	errMsgs := make(res.OLDVerboseMetaMsgs, 0)
 
-	validationErr, err := httputil.Bind(c, r, map[string]string{
+	validationErr, err := httputil.BindOld(c, r, map[string]string{
 		"email":    "string",
 		"password": "string",
 	})
@@ -54,8 +54,15 @@ func (r *reqAuthLogin) Bind(c echo.Context) error {
 	errMsgs.AppendDomMap(validationErr)
 
 	if len(errMsgs) > 0 {
-		return res.NewErrorUnprocessable(errMsgs)
+		return res.OLDNewErrorUnprocessable(errMsgs)
 	}
+
+	return nil
+}
+
+func (r *reqAuthLogin) Bind(c echo.Context) error {
+	ctx, span := monitoring.Tracer().Start(r.ctx, "http.req.auth.login")
+	defer span.End()
 
 	return nil
 }
@@ -83,7 +90,7 @@ func Login(srv *auth.Auth) echo.HandlerFunc {
 
 		err := i.Bind(c)
 		if err != nil {
-			if unErr, ok := err.(*res.UnprocessableErrResponse); ok {
+			if unErr, ok := err.(*res.OLDUnprocessableErrResponse); ok {
 				return c.JSON(http.StatusUnprocessableEntity, unErr)
 			}
 
@@ -91,7 +98,7 @@ func Login(srv *auth.Auth) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("binding request error"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		token, err := srv.Login(i)
@@ -99,7 +106,7 @@ func Login(srv *auth.Auth) echo.HandlerFunc {
 			if errors.Is(err, auth.ErrInvalidCredentials) {
 				return c.JSON(
 					http.StatusUnauthorized,
-					res.NewError(err.Error(), errcode.AuthInvalidCredentials),
+					res.OLDNewError(err.Error(), errcode.AuthInvalidCredentials),
 				)
 			}
 
@@ -107,7 +114,7 @@ func Login(srv *auth.Auth) echo.HandlerFunc {
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error caught in service"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		return c.JSON(http.StatusOK, res.Auth(token))

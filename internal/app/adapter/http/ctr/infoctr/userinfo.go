@@ -25,14 +25,14 @@ func Userinfo(srv *auth.Auth) echo.HandlerFunc {
 				errors.Is(err, req.ErrTokenExpired)
 
 			if isTokenNotProvidedErr {
-				return c.JSON(http.StatusUnauthorized, res.NewError(err.Error(), errcode.AuthUnauthorized))
+				return c.JSON(http.StatusUnauthorized, res.OLDNewError(err.Error(), errcode.AuthUnauthorized))
 			}
 
 			otel.SpanLogError(span, err,
 				otel.WithErrorLog(ctx),
 				otel.WithMessage("error when parsing token"),
 			)
-			return c.JSON(http.StatusInternalServerError, res.NewErrorGeneric())
+			return c.JSON(http.StatusInternalServerError, res.OLDNewErrorGeneric())
 		}
 
 		return c.JSON(http.StatusOK, res.User(u))

@@ -5,51 +5,51 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 )
 
-type errResponse struct {
+type oldErrResponse struct {
 	Msg     string       `json:"message"`
 	ErrCode errcode.Code `json:"errorCode"`
 }
 
-func NewErrorGeneric() errResponse {
-	return errResponse{
+func OLDNewErrorGeneric() oldErrResponse {
+	return oldErrResponse{
 		Msg:     "Something wrong in the server",
 		ErrCode: errcode.Generic,
 	}
 }
 
-func NewError(msg string, code errcode.Code) errResponse {
-	return errResponse{
+func OLDNewError(msg string, code errcode.Code) oldErrResponse {
+	return oldErrResponse{
 		Msg:     msg,
 		ErrCode: code,
 	}
 }
 
-type verboseMetaErr struct {
+type oldverboseMetaErr struct {
 	Code string `json:"code"`
 	Msg  string `json:"message,omitempty"`
 }
 
-func NewVerboseMeta(code string, msg string) verboseMetaErr {
-	return verboseMetaErr{
+func OLDNewVerboseMeta(code string, msg string) oldverboseMetaErr {
+	return oldverboseMetaErr{
 		Code: code,
 		Msg:  msg,
 	}
 }
 
-type VerboseMetaMsgs map[string][]verboseMetaErr
+type OLDVerboseMetaMsgs map[string][]oldverboseMetaErr
 
-func (v VerboseMetaMsgs) Append(key string, vErr ...verboseMetaErr) VerboseMetaMsgs {
+func (v OLDVerboseMetaMsgs) Append(key string, vErr ...oldverboseMetaErr) OLDVerboseMetaMsgs {
 	v[key] = append(v[key], vErr...)
 
 	return v
 }
 
-func (v VerboseMetaMsgs) AppendDom(key string, err ...domain.VerboseError) VerboseMetaMsgs {
-	items := make([]verboseMetaErr, len(err))
+func (v OLDVerboseMetaMsgs) AppendDom(key string, err ...domain.OLDVerboseError) OLDVerboseMetaMsgs {
+	items := make([]oldverboseMetaErr, len(err))
 	for i := range err {
 		domErr := err[i]
 
-		items[i] = NewVerboseMeta(string(domErr.Code), domErr.Message)
+		items[i] = OLDNewVerboseMeta(string(domErr.Code), domErr.Message)
 	}
 
 	v.Append(key, items...)
@@ -57,7 +57,7 @@ func (v VerboseMetaMsgs) AppendDom(key string, err ...domain.VerboseError) Verbo
 	return v
 }
 
-func (v VerboseMetaMsgs) AppendDomMap(mapErr map[string][]domain.VerboseError) VerboseMetaMsgs {
+func (v OLDVerboseMetaMsgs) AppendDomMap(mapErr map[string][]domain.OLDVerboseError) OLDVerboseMetaMsgs {
 	for key := range mapErr {
 		vErrs := mapErr[key]
 
@@ -67,27 +67,27 @@ func (v VerboseMetaMsgs) AppendDomMap(mapErr map[string][]domain.VerboseError) V
 	return v
 }
 
-func (v VerboseMetaMsgs) AppendVList(e domain.VerboseErrorList) VerboseMetaMsgs {
+func (v OLDVerboseMetaMsgs) AppendVList(e domain.OLDVerboseErrorList) OLDVerboseMetaMsgs {
 	for _, eVal := range e {
-		v.Append(eVal.FieldName, NewVerboseMeta(string(eVal.Err.Code), eVal.Err.Message))
+		v.Append(eVal.FieldName, OLDNewVerboseMeta(string(eVal.Err.Code), eVal.Err.Message))
 	}
 
 	return v
 }
 
-type UnprocessableErrResponse struct {
-	errResponse
+type OLDUnprocessableErrResponse struct {
+	oldErrResponse
 
-	Meta VerboseMetaMsgs `json:"meta"`
+	Meta OLDVerboseMetaMsgs `json:"meta"`
 }
 
-func (e *UnprocessableErrResponse) Error() string {
+func (e *OLDUnprocessableErrResponse) Error() string {
 	return "Invalid param request"
 }
 
-func NewErrorUnprocessable(meta VerboseMetaMsgs) *UnprocessableErrResponse {
-	return &UnprocessableErrResponse{
-		errResponse: errResponse{
+func OLDNewErrorUnprocessable(meta OLDVerboseMetaMsgs) *OLDUnprocessableErrResponse {
+	return &OLDUnprocessableErrResponse{
+		oldErrResponse: oldErrResponse{
 			Msg:     "Structure body/param might be invalid.",
 			ErrCode: errcode.InvalidParam,
 		},
