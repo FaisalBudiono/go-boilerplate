@@ -1,0 +1,5 @@
+$kind: http-request
+url: "{{API_URL}}/health"
+method: GET
+examples: .resources/Health.resources/examples
+order: 2855839440795144

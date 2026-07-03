@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{API_URL}}/users"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "name": "Normal User",
+        "email": "normal@example.com",
+        "password": "qwerty1",
+        "roles": []
+    }
+examples: .resources/Create User.resources/examples
+order: 1783117164895

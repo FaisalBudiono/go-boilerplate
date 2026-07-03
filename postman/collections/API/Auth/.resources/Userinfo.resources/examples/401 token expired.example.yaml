@@ -1,0 +1,24 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/userinfo"
+  method: GET
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 8b90098201cdd40df5b21ca4973d2dc2
+    - key: date
+      value: Fri, 03 Jul 2026 22:11:00 GMT
+    - key: content-length
+      value: "110"
+  body:
+    type: json
+    content: |
+      {"message":"Token has expired","errorCode":"auth.token.expired","traceID":"8b90098201cdd40df5b21ca4973d2dc2"}
+order: 4084098126732342
+name: 401 token expired

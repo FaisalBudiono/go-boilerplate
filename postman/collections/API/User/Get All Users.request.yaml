@@ -1,0 +1,25 @@
+$kind: http-request
+name: Get All Users
+url: "{{API_URL}}/users"
+method: GET
+queryParams:
+  - key: page
+    value: 1a
+    disabled: true
+  - key: per_page
+    value: "15"
+    disabled: true
+  - key: roles
+    value: asd
+    disabled: true
+body:
+  type: json
+  content: |-
+    {
+        "name": "Normal User",
+        "email": "normal@example.com",
+        "password": "qwerty1",
+        "roles": []
+    }
+examples: .resources/Get All Users.resources/examples
+order: 4053594297546449

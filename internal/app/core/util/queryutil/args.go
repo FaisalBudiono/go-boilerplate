@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-func ArgsPlaceholder(argsTotal, argNoBefore int) string {
+func ArgsPlaceholder(argsTotal, argIndexStart int) string {
 	args := make([]string, argsTotal)
 	for i := range argsTotal {
-		argNo := i + argNoBefore + 1
+		argNo := i + argIndexStart + 1
 
 		args[i] = fmt.Sprintf("$%d", argNo)
 	}
