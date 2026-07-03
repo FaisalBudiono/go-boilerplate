@@ -1,0 +1,19 @@
+version: "2"
+
+linters:
+  exclusions:
+    paths:
+      - cmd/dummy/*
+
+output:
+  formats:
+    text:
+      # Output path can be either `stdout`, `stderr` or path to the file to write to.
+      # Default: stdout
+      path: ./golangci-lint-report.txt
+      # Should be true for CI
+      print-linter-name: false
+      # Should be true for CI
+      print-issued-lines: false
+      # Should be true for CI
+      colors: false

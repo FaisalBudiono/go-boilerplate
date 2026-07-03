@@ -1,0 +1,10 @@
+.github/*
+.env
+.git/*
+
+Dockerfile
+
+logs/*
+tmp/*
+
+golangci-lint-report.txt
