@@ -1,0 +1,43 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/users"
+  method: GET
+  queryParams:
+    - key: page
+      value: "1"
+      disabled: true
+    - key: per_page
+      value: "15"
+      disabled: true
+    - key: roles
+      value: ""
+      disabled: true
+  body:
+    type: json
+    content: |-
+      {
+          "name": "Normal User",
+          "email": "normal@example.com",
+          "password": "qwerty1",
+          "roles": []
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 6389c4ad203f313841829bb3fe58b12b
+    - key: date
+      value: Fri, 03 Jul 2026 23:25:36 GMT
+    - key: content-length
+      value: "353"
+  body:
+    type: json
+    content: |
+      {"data":[{"id":"1","name":"My Admin","email":"fakeucul@gmail.com","roles":["admin"],"createdAt":"2026-07-03T22:00:59Z","updatedAt":"2026-07-03T22:00:59Z"},{"id":"7","name":"Normal User","email":"normal@example.com","roles":[],"createdAt":"2026-07-03T23:04:12Z","updatedAt":"2026-07-03T23:04:12Z"}],"meta":{"page":1,"perPage":10,"lastPage":1,"total":2}}
+order: 2602538962431724
+name: 200 ok

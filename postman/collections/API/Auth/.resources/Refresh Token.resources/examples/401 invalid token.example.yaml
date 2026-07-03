@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/refresh"
+  method: PUT
+  body:
+    type: json
+    content: |-
+      {
+          "refreshToken": "{{REFRESH_TOKEN}}"
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 84ef1ec1b8565cb1c6f616daa12adb5f
+    - key: date
+      value: Fri, 03 Jul 2026 22:11:53 GMT
+    - key: content-length
+      value: "114"
+  body:
+    type: json
+    content: |
+      {"message":"Invalid refresh token","errorCode":"auth.token.invalid","traceID":"84ef1ec1b8565cb1c6f616daa12adb5f"}
+order: 1872660323500035
+name: 401 invalid token

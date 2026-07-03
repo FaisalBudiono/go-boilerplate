@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{API_URL}}/userinfo"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{ACCESS_TOKEN}}"
+examples: .resources/Userinfo.resources/examples
+order: 460763872479401

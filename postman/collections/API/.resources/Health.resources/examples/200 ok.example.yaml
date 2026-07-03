@@ -1,0 +1,24 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/health"
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 98d738556e8c938c806450583d4b22c4
+    - key: date
+      value: Fri, 03 Jul 2026 22:01:07 GMT
+    - key: content-length
+      value: "74"
+  body:
+    type: json
+    content: |
+      {"healthy":true,"dependencies":{"database":"healthy"},"version":"latest"}
+order: 1783116069422
+name: 200 ok

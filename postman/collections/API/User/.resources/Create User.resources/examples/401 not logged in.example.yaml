@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/users"
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+          "name": "Normal User",
+          "email": "normal@example.com",
+          "password": "qwerty1",
+          "roles": []
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: f817ba9d14da1f1cc31e0b2c97604ac7
+    - key: date
+      value: Fri, 03 Jul 2026 22:55:17 GMT
+    - key: content-length
+      value: "121"
+  body:
+    type: json
+    content: |
+      {"message":"Authorization header required","errorCode":"auth.unauthorized","traceID":"f817ba9d14da1f1cc31e0b2c97604ac7"}
+order: 3111250493477526
+name: 401 not logged in

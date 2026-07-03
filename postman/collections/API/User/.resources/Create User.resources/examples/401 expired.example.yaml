@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/users"
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+          "name": "Normal User",
+          "email": "normal@example.com",
+          "password": "qwerty1",
+          "roles": []
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: ede04bc98a89527babd1df09b45fe1a7
+    - key: date
+      value: Fri, 03 Jul 2026 22:54:51 GMT
+    - key: content-length
+      value: "110"
+  body:
+    type: json
+    content: |
+      {"message":"Token has expired","errorCode":"auth.token.expired","traceID":"ede04bc98a89527babd1df09b45fe1a7"}
+order: 3111250493477126
+name: 401 expired
