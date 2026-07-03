@@ -1,4 +1,4 @@
-module komdigi-immigration
+module FaisalBudiono/go-boilerplate
 
 go 1.26.1
 

@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"komdigi-immigration/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 
 	"go.opentelemetry.io/contrib/processors/minsev"
 	"go.opentelemetry.io/otel"

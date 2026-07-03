@@ -1,6 +1,6 @@
 package getall
 
-import "komdigi-immigration/internal/app/domain"
+import "FaisalBudiono/go-boilerplate/internal/app/domain"
 
 type queryOpt struct {
 	Roles []domain.Role

@@ -1,7 +1,7 @@
 package http
 
 import (
-	"komdigi-immigration/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 
 	"github.com/labstack/echo/v5"
 )

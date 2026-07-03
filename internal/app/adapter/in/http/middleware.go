@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"komdigi-immigration/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 
 	echootel "github.com/labstack/echo-opentelemetry"
 	"github.com/labstack/echo/v5"

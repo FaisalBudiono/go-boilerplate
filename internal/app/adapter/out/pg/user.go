@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
-	"komdigi-immigration/internal/app/core/util/queryutil"
-	"komdigi-immigration/internal/app/domain"
-	"komdigi-immigration/internal/app/port"
-	getallopt "komdigi-immigration/internal/app/port/options/user/getall"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/port"
+	getallopt "FaisalBudiono/go-boilerplate/internal/app/port/options/user/getall"
 )
 
 func NewUser() *User {
@@ -44,7 +44,7 @@ type User struct{}
 func (u *User) FindByEmail(
 	ctx context.Context, tx port.DBTX, email string,
 ) (domain.UserWithPassword, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, "adapter.pg.user.find-by-email")
+	ctx, span := monitoring.Tracer().Start(ctx, u.sName("find-by-email"))
 	defer span.End()
 
 	monitoring.Logger().InfoContext(
@@ -102,7 +102,7 @@ func (u *User) FindByEmail(
 func (u *User) GetMap(
 	ctx context.Context, tx port.DBTX, ids []string,
 ) (map[string]domain.User, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, "adapter.pg.user.get-map")
+	ctx, span := monitoring.Tracer().Start(ctx, u.sName("get-map"))
 	defer span.End()
 
 	monitoring.Logger().DebugContext(ctx, "ids", slog.Any("ids", ids))
@@ -195,7 +195,7 @@ func (u *User) GetPaginated(
 	page int64, perPage int64,
 	opts ...getallopt.QueryOption,
 ) ([]domain.User, int64, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, "adapter.pg.user.get-paginated")
+	ctx, span := monitoring.Tracer().Start(ctx, u.sName("get-paginated"))
 	defer span.End()
 
 	qo := getallopt.NewQueryOpt()
@@ -334,6 +334,48 @@ func (u *User) GetPaginated(
 	}
 
 	return res, total, nil
+}
+
+func (u *User) Insert(
+	ctx context.Context, tx port.DBTX, data domain.UserData,
+) (string, error) {
+	ctx, span := monitoring.Tracer().Start(ctx, u.sName("insert"))
+	defer span.End()
+
+	monitoring.Logger().DebugContext(
+		ctx, "input", slog.Any("data", data),
+	)
+
+	query := `
+		INSERT INTO
+			users (name, email, password)
+		VALUES
+			($1, $2, $3)
+		RETURNING
+			id
+	`
+	args := []any{data.Name, data.Email, data.HashedPassword}
+
+	monitoring.Logger().DebugContext(
+		ctx, "query", slog.String("query", queryutil.Clean(query)),
+		slog.Any("args", args),
+	)
+
+	var id string
+	err := tx.QueryRowContext(ctx, query, args...).Scan(&id)
+	if err != nil {
+		otelutil.SpanLogError(
+			span, err, otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to insert user"),
+		)
+		return "", err
+	}
+
+	return id, nil
+}
+
+func (u *User) sName(s string) string {
+	return "adapter.pg.user." + s
 }
 
 func (u *User) mapDomain(raw userRes) domain.User {

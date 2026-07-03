@@ -5,11 +5,11 @@ import (
 	"errors"
 	"log/slog"
 
-	"komdigi-immigration/internal/app/core/auth/jwt"
-	"komdigi-immigration/internal/app/core/util/errs"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
-	"komdigi-immigration/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/errs"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 )
 
 type reqParseUser interface {

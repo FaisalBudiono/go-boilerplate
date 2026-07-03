@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"komdigi-immigration/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 )
 
 type contextKey string

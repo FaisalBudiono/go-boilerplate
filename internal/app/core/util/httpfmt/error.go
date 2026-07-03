@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"komdigi-immigration/internal/app/core/util/app"
-	"komdigi-immigration/internal/app/core/util/httpfmt/code/invalid"
-	"komdigi-immigration/internal/app/domain/errcode"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 
 	"go.opentelemetry.io/otel/trace"
 )

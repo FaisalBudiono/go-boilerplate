@@ -3,8 +3,8 @@ package rules
 import (
 	"errors"
 
-	"komdigi-immigration/internal/app/core/util/httpfmt"
-	"komdigi-immigration/internal/app/core/util/httpfmt/code/invalid"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
 )
 
 func Required[T comparable]() httpfmt.Rule {

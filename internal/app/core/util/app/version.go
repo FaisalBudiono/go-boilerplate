@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"komdigi-immigration/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 )
 
 //go:embed ver/*

@@ -3,8 +3,8 @@ package port
 import (
 	"context"
 
-	"komdigi-immigration/internal/app/domain"
-	getallopt "komdigi-immigration/internal/app/port/options/user/getall"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	getallopt "FaisalBudiono/go-boilerplate/internal/app/port/options/user/getall"
 )
 
 type UserRepo interface {
@@ -19,4 +19,7 @@ type UserRepo interface {
 		page, perPage int64,
 		opts ...getallopt.QueryOption,
 	) ([]domain.User, int64, error)
+
+	// Insert returns the userID of the inserted user
+	Insert(ctx context.Context, tx DBTX, data domain.UserData) (string, error)
 }

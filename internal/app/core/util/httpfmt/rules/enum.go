@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"komdigi-immigration/internal/app/core/util/httpfmt"
-	"komdigi-immigration/internal/app/core/util/httpfmt/code/invalid"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
 )
 
 func EnumFlag[T enumValidable](

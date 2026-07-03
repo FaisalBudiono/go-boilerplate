@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"strings"
 
-	"komdigi-immigration/internal/app/adapter/in/http/req"
-	"komdigi-immigration/internal/app/core/auth"
-	"komdigi-immigration/internal/app/core/util/httpfmt"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
-	"komdigi-immigration/internal/app/domain"
-	"komdigi-immigration/internal/app/domain/errcode"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http/req"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 
 	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel/attribute"
@@ -122,18 +122,18 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 			}
 
 			span.AddEvent("user authenticated", trace.WithAttributes(
-				attribute.String("userID", user.UserTokenInfo.ID),
+				attribute.String("userID", user.Info.ID),
 				attribute.String("email", user.User.User.Email),
-				attribute.String("loginID", user.UserTokenInfo.LoginID),
-				attribute.String("loginMethod", string(user.UserTokenInfo.LoginMethod)),
+				attribute.String("loginID", user.Info.LoginID),
+				attribute.String("loginMethod", string(user.Info.LoginMethod)),
 				attribute.StringSlice("roles", roleStrings),
 			))
 			monitoring.Logger().DebugContext(
 				ctx, "user authenticated",
-				slog.String("userID", user.UserTokenInfo.ID),
+				slog.String("userID", user.Info.ID),
 				slog.String("email", user.User.User.Email),
-				slog.String("loginID", user.UserTokenInfo.LoginID),
-				slog.String("loginMethod", string(user.UserTokenInfo.LoginMethod)),
+				slog.String("loginID", user.Info.LoginID),
+				slog.String("loginMethod", string(user.Info.LoginMethod)),
 				slog.Any("roles", roleStrings),
 			)
 

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"komdigi-immigration/internal/app/core/util/httpfmt"
-	"komdigi-immigration/internal/app/core/util/httpfmt/code/invalid"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
 )
 
 func Max(maxTotal int) httpfmt.Rule {

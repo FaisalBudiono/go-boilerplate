@@ -6,12 +6,12 @@ import (
 	"log"
 	"os"
 
-	"komdigi-immigration/internal/app/adapter/configuration/otel"
-	"komdigi-immigration/internal/app/adapter/in/http"
-	"komdigi-immigration/internal/app/core/util/app"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
-	"komdigi-immigration/internal/app/providers"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/providers"
 
 	"github.com/labstack/echo/v5"
 )

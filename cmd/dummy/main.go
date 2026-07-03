@@ -2,18 +2,13 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
-	"komdigi-immigration/internal/app/adapter/configuration/db"
-	"komdigi-immigration/internal/app/adapter/configuration/otel"
-	"komdigi-immigration/internal/app/adapter/hardcode/passport"
-	"komdigi-immigration/internal/app/core/util/app"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 )
 
 func main() {
@@ -45,15 +40,6 @@ func run(ctx context.Context) error {
 
 	ctx, span := monitoring.Tracer().Start(ctx, "dummy.main")
 	defer span.End()
-
-	adapter := passport.New()
-	_ = adapter
-
-	dbConn, err := db.PostgresConn()
-	if err != nil {
-		return err
-	}
-	_ = dbConn
 
 	// icl := domain.NewImmigrationClearanceLogData(
 	// 	[]byte(`{"status":"OK","data":{"id":"1234567890"}}`),
@@ -89,34 +75,5 @@ func run(ctx context.Context) error {
 	// 	"1234567890",
 	// )
 
-	asd := domain.IMEI("358876627291952")
-
-	fmt.Println("nilai")
-	fmt.Println(asd)
-	fmt.Printf("%t", asd.IsValid())
-
-	fmt.Println()
-	fmt.Println("done")
-
 	return nil
-}
-
-func makau(s string) (string, error) {
-	n := len(s)
-	if n == 8 {
-		return "", errors.New("WOI GUA BENCI 8")
-	}
-
-	return strconv.Itoa(n), nil
-}
-
-func kicauMania(isi string, err error) func() {
-	return func() {
-		log.Println("ISI DARI KICAU MANIA")
-		log.Println(isi)
-		if err != nil {
-			log.Println("error KICAU")
-			log.Println(err.Error())
-		}
-	}
 }

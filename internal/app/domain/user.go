@@ -29,6 +29,20 @@ func NewUser(
 	}
 }
 
+type UserData struct {
+	Name           string
+	Email          string
+	HashedPassword string
+}
+
+func NewUserData(name, email, hashedPassword string) UserData {
+	return UserData{
+		Name:           name,
+		Email:          email,
+		HashedPassword: hashedPassword,
+	}
+}
+
 type UserWithPassword struct {
 	User
 	HashedPassword string
@@ -79,15 +93,15 @@ func NewUserEagerLoad(user User, roles []Role) UserEagerLoad {
 type Userinfo struct {
 	User UserEagerLoad
 
-	UserTokenInfo UserTokenInfo
+	Info UserTokenInfo
 }
 
 func NewUserinfo(
 	user UserEagerLoad,
-	userTokenInfo UserTokenInfo,
+	info UserTokenInfo,
 ) Userinfo {
 	return Userinfo{
-		User:          user,
-		UserTokenInfo: userTokenInfo,
+		User: user,
+		Info: info,
 	}
 }

@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"komdigi-immigration/internal/app/adapter/configuration/db"
-	"komdigi-immigration/internal/app/adapter/configuration/db/seeder"
-	"komdigi-immigration/internal/app/core/util/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/db"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/db/seeder"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/hash"
 )
 
 type Cmd string

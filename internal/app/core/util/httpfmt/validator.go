@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 )
 
 type ValidationInput struct {

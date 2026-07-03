@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"komdigi-immigration/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 )
 
 type TokenRepo interface {

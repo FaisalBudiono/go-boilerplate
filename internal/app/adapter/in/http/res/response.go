@@ -3,7 +3,7 @@ package res
 import (
 	"math"
 
-	"komdigi-immigration/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 )
 
 type response[T any] struct {

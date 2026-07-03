@@ -5,11 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"komdigi-immigration/internal/app/core/auth/passwd"
-	"komdigi-immigration/internal/app/core/logger/activitylog"
-	"komdigi-immigration/internal/app/core/user/eagerload"
-	"komdigi-immigration/internal/app/domain"
-	"komdigi-immigration/internal/app/port"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth/passwd"
+	"FaisalBudiono/go-boilerplate/internal/app/core/user/eagerload"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/port"
 )
 
 func New(
@@ -17,8 +16,6 @@ func New(
 	userRepo port.UserRepo,
 	tokenRepo port.TokenRepo,
 	roleRepo port.RoleRepo,
-	activityLogRepo port.ActivityLogRepo,
-	clientCredRepo port.ClientCredRepo,
 	hasher passwd.Hasher,
 	jwtUserSigner jwtUserSigner,
 	jwtRefreshSigner jwtRefreshSigner,
@@ -29,14 +26,12 @@ func New(
 		userRepo:       userRepo,
 		tokenRepo:      tokenRepo,
 		roleRepo:       roleRepo,
-		clientCredRepo: clientCredRepo,
 
 		hasher:           hasher,
 		jwtUserSigner:    jwtUserSigner,
 		jwtRefreshSigner: jwtRefreshSigner,
 
-		userLoader:     eagerload.New(db, roleRepo),
-		activityLogger: activitylog.New(db, activityLogRepo),
+		userLoader: eagerload.New(db, roleRepo),
 	}
 }
 
@@ -46,14 +41,12 @@ type Auth struct {
 	userRepo       port.UserRepo
 	tokenRepo      port.TokenRepo
 	roleRepo       port.RoleRepo
-	clientCredRepo port.ClientCredRepo
 
 	hasher           passwd.Hasher
 	jwtUserSigner    jwtUserSigner
 	jwtRefreshSigner jwtRefreshSigner
 
-	userLoader     *eagerload.EagerLoad
-	activityLogger *activitylog.ActivityLog
+	userLoader *eagerload.EagerLoad
 }
 
 func (srv *Auth) spanName(s string) string {

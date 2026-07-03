@@ -1,6 +1,6 @@
 package res
 
-import "komdigi-immigration/internal/app/domain"
+import "FaisalBudiono/go-boilerplate/internal/app/domain"
 
 type tokenPair struct {
 	Type         string `json:"tokenType"`

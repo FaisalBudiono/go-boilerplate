@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"komdigi-immigration/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 
 	"github.com/XSAM/otelsql"
 	_ "github.com/lib/pq"

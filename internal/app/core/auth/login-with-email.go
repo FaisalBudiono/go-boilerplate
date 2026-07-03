@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"slices"
 
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
-	"komdigi-immigration/internal/app/core/util/rnd"
-	"komdigi-immigration/internal/app/domain"
-	"komdigi-immigration/internal/app/port"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/rnd"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/port"
 )
 
 type reqLoginWithEmail interface {

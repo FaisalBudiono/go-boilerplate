@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"komdigi-immigration/internal/app/core/util/errs"
-	"komdigi-immigration/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/errs"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 
 	"github.com/golang-jwt/jwt/v5"
 )

@@ -7,11 +7,11 @@ import (
 	"log"
 	"os"
 
-	"komdigi-immigration/cmd/migrator/cmd"
-	"komdigi-immigration/internal/app/adapter/configuration/db"
-	"komdigi-immigration/internal/app/adapter/configuration/otel"
-	"komdigi-immigration/internal/app/core/util/app"
-	"komdigi-immigration/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/cmd/migrator/cmd"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/db"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 )
 
 func main() {

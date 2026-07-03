@@ -3,7 +3,7 @@ package res
 import (
 	"time"
 
-	"komdigi-immigration/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
 )
 
 type user struct {

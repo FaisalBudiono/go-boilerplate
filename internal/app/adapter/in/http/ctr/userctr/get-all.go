@@ -6,17 +6,17 @@ import (
 	"strconv"
 	"strings"
 
-	"komdigi-immigration/internal/app/adapter/in/http/req"
-	"komdigi-immigration/internal/app/adapter/in/http/res"
-	"komdigi-immigration/internal/app/core/user"
-	"komdigi-immigration/internal/app/core/util/errs"
-	"komdigi-immigration/internal/app/core/util/httpfmt"
-	"komdigi-immigration/internal/app/core/util/httpfmt/code/invalid"
-	"komdigi-immigration/internal/app/core/util/httpfmt/rules"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
-	"komdigi-immigration/internal/app/domain"
-	"komdigi-immigration/internal/app/domain/errcode"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http/req"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http/res"
+	"FaisalBudiono/go-boilerplate/internal/app/core/user"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/errs"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/rules"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 
 	"github.com/labstack/echo/v5"
 )
@@ -76,8 +76,8 @@ type reqGetAll struct {
 	QueryRoleFlag string `query:"roles"`
 
 	actor     domain.Userinfo
-	page      *int64
-	perPage   *int64
+	page      int64
+	perPage   int64
 	roleFlags []domain.Role
 }
 
@@ -119,28 +119,28 @@ func (r *reqGetAll) bind(c *echo.Context) error {
 		return err
 	}
 
-	page := func(raw string) *int64 {
+	page := func(raw string) int64 {
 		trimmed := strings.TrimSpace(raw)
 		if trimmed == "" {
-			return nil
+			return 0
 		}
 		page, err := strconv.ParseInt(trimmed, 10, 64)
 		if err != nil {
-			return nil
+			return 0
 		}
-		return &page
+		return page
 	}(r.QueryPage)
 
-	perPage := func(raw string) *int64 {
+	perPage := func(raw string) int64 {
 		trimmed := strings.TrimSpace(raw)
 		if trimmed == "" {
-			return nil
+			return 0
 		}
 		perPage, err := strconv.ParseInt(trimmed, 10, 64)
 		if err != nil {
-			return nil
+			return 0
 		}
-		return &perPage
+		return perPage
 	}(r.QueryPerPage)
 
 	roleFlags := func(raw string) []domain.Role {
@@ -169,6 +169,6 @@ func (r *reqGetAll) bind(c *echo.Context) error {
 
 func (r *reqGetAll) Context() context.Context { return r.ctx }
 func (r *reqGetAll) Actor() domain.Userinfo   { return r.actor }
-func (r *reqGetAll) Page() *int64             { return r.page }
-func (r *reqGetAll) PerPage() *int64          { return r.perPage }
+func (r *reqGetAll) Page() int64              { return r.page }
+func (r *reqGetAll) PerPage() int64           { return r.perPage }
 func (r *reqGetAll) RoleFlags() []domain.Role { return r.roleFlags }

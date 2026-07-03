@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"komdigi-immigration/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"

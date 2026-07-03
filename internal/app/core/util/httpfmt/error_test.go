@@ -3,7 +3,7 @@ package httpfmt_test
 import (
 	"testing"
 
-	"komdigi-immigration/internal/app/core/util/httpfmt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
 
 	"github.com/stretchr/testify/suite"
 )

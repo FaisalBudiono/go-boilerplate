@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"komdigi-immigration/internal/app/core/healthcheck"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/healthcheck"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 
 	"github.com/labstack/echo/v5"
 )

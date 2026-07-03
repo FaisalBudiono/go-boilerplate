@@ -4,17 +4,17 @@ import (
 	"context"
 	"log/slog"
 
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
-	"komdigi-immigration/internal/app/core/util/sliceutil"
-	"komdigi-immigration/internal/app/domain"
-	getallopt "komdigi-immigration/internal/app/port/options/user/getall"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/sliceutil"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	getallopt "FaisalBudiono/go-boilerplate/internal/app/port/options/user/getall"
 )
 
 type reqGetAll interface {
 	Context() context.Context
-	Page() *int64
-	PerPage() *int64
+	Page() int64
+	PerPage() int64
 	RoleFlags() []domain.Role
 	Actor() domain.Userinfo
 }
@@ -22,23 +22,13 @@ type reqGetAll interface {
 func (srv *User) GetAll(
 	req reqGetAll,
 ) ([]domain.UserEagerLoad, domain.Pagination, error) {
-	ctx, span := monitoring.Tracer().Start(req.Context(), "core.user.get-all")
+	ctx, span := monitoring.Tracer().Start(req.Context(), srv.sName("get-all"))
 	defer span.End()
 
-	pPage := req.Page()
-	pPerPage := req.PerPage()
+	page := req.Page()
+	perPage := req.PerPage()
 	roleFlags := req.RoleFlags()
 	actor := req.Actor()
-
-	page := defaultPage
-	if pPage != nil {
-		page = *pPage
-	}
-
-	perPage := defaultPerPage
-	if pPerPage != nil {
-		perPage = *pPerPage
-	}
 
 	monitoring.Logger().InfoContext(
 		ctx, "input",

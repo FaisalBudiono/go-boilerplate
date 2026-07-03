@@ -6,29 +6,22 @@ import (
 	"fmt"
 	"time"
 
-	"komdigi-immigration/internal/app/adapter/configuration/db"
-	"komdigi-immigration/internal/app/adapter/out/imigserv"
-	"komdigi-immigration/internal/app/adapter/out/pg"
-	"komdigi-immigration/internal/app/core/auth"
-	"komdigi-immigration/internal/app/core/auth/jwt"
-	"komdigi-immigration/internal/app/core/clientman"
-	"komdigi-immigration/internal/app/core/healthcheck"
-	"komdigi-immigration/internal/app/core/imig"
-	"komdigi-immigration/internal/app/core/logger"
-	"komdigi-immigration/internal/app/core/user"
-	"komdigi-immigration/internal/app/core/util/app"
-	"komdigi-immigration/internal/app/core/util/hash"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/db"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/out/pg"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/healthcheck"
+	"FaisalBudiono/go-boilerplate/internal/app/core/user"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 )
 
 type coreConfig struct {
-	ActivityLogger *logger.Logger
-	Auth           *auth.Auth
-	ClientManager  *clientman.ClientManager
-	Healthcheck    *healthcheck.Healthcheck
-	Immigration    *imig.Imig
-	User           *user.User
+	Auth        *auth.Auth
+	Healthcheck *healthcheck.Healthcheck
+	User        *user.User
 }
 
 type providerConfig struct {
@@ -79,14 +72,6 @@ func Setup(ctx context.Context) ([]shutdown, error) {
 	userRepo := pg.NewUser()
 	tokenRepo := pg.NewTokenCredential()
 	roleRepo := pg.NewRole()
-	clientCredRepo := pg.NewClientCredential()
-	activityLogRepo := pg.NewActivityLog()
-	immigrationLogRepo := pg.NewImmigrationClearanceLog()
-
-	icService, err := imigserv.New(ctx)
-	if err != nil {
-		return shutdowns, err
-	}
 
 	hcCore := healthcheck.New(dbconn)
 	authCore := auth.New(
@@ -94,46 +79,19 @@ func Setup(ctx context.Context) ([]shutdown, error) {
 		userRepo,
 		tokenRepo,
 		roleRepo,
-		activityLogRepo,
-		clientCredRepo,
 		argonHasher,
 		userSigner,
 		refreshSigner,
 	)
-	userCore := user.New(dbconn, userRepo, roleRepo)
-	clientManCore := clientman.New(
-		dbconn,
-		userRepo,
-		roleRepo,
-		clientCredRepo,
-		activityLogRepo,
-		argonHasher,
-	)
-	activityLogCore := logger.New(
-		dbconn,
-		activityLogRepo,
-		userRepo,
-		roleRepo,
-	)
-	immigrationCore := imig.New(
-		dbconn,
-		immigrationLogRepo,
-		icService,
-		activityLogRepo,
-		roleRepo,
-		userRepo,
-	)
+	userCore := user.New(dbconn, userRepo, roleRepo, argonHasher)
 
 	provider = providerConfig{
 		DB: dbconn,
 
 		Core: coreConfig{
-			ActivityLogger: activityLogCore,
-			Auth:           authCore,
-			ClientManager:  clientManCore,
-			Healthcheck:    hcCore,
-			Immigration:    immigrationCore,
-			User:           userCore,
+			Auth:        authCore,
+			Healthcheck: hcCore,
+			User:        userCore,
 		},
 	}
 

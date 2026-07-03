@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	"komdigi-immigration/internal/app/core/util/httpfmt/code/invalid"
-	"komdigi-immigration/internal/app/core/util/monitoring"
-	"komdigi-immigration/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 
 	"github.com/labstack/echo/v5"
 	"go.opentelemetry.io/otel/trace"
