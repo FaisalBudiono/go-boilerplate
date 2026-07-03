@@ -1,0 +1,17 @@
+name: Local
+values:
+  - key: API_URL
+    value: 'http://localhost:8080'
+    enabled: true
+  - key: LOGIN_EMAIL
+    value: faisal@example.com
+    enabled: true
+  - key: LOGIN_PASSWORD
+    value: qwerty1
+    enabled: true
+  - key: ACCESS_TOKEN
+    value: ''
+    enabled: true
+  - key: REFRESH_TOKEN
+    value: ''
+    enabled: true

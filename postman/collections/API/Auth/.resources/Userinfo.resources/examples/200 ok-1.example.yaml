@@ -1,0 +1,24 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/userinfo"
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 225c6e8791b86fdc8138e481eb596fa5
+    - key: date
+      value: Fri, 03 Jul 2026 23:07:12 GMT
+    - key: content-length
+      value: "151"
+  body:
+    type: json
+    content: |
+      {"data":{"id":"7","name":"Normal User","email":"normal@example.com","roles":[],"createdAt":"2026-07-03T23:04:12Z","updatedAt":"2026-07-03T23:04:12Z"}}
+order: 1783116511263
+name: 200 ok

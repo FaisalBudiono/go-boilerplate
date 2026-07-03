@@ -1,85 +1,101 @@
 package providers
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/db"
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/pg"
+	"context"
+	"database/sql"
+	"fmt"
+	"time"
+
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/db"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/out/pg"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
-	"FaisalBudiono/go-boilerplate/internal/app/core/hash"
-	"FaisalBudiono/go-boilerplate/internal/app/core/ht"
-	"FaisalBudiono/go-boilerplate/internal/app/core/product"
+	"FaisalBudiono/go-boilerplate/internal/app/core/healthcheck"
+	"FaisalBudiono/go-boilerplate/internal/app/core/user"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
-	"database/sql"
-	"time"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/hash"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 )
 
-type repoConfig struct {
-	AuthActivity *pg.AuthActivity
-	Role         *pg.Role
-	User         *pg.User
-	Product      *pg.Product
-}
-
 type coreConfig struct {
-	Health  *ht.Healthcheck
-	Auth    *auth.Auth
-	Product *product.Product
+	Auth        *auth.Auth
+	Healthcheck *healthcheck.Healthcheck
+	User        *user.User
 }
 
 type providerConfig struct {
-	DB   *sql.DB
-	Repo repoConfig
+	DB *sql.DB
+
 	Core coreConfig
 }
 
 var provider = providerConfig{}
 
-func SetUp() {
-	dbconn := db.PostgresConn()
+type shutdown func() error
 
-	authActivityRepo := pg.NewAuthActivity()
-	roleRepo := pg.NewRole()
-	userRepo := pg.NewUser(roleRepo)
-	productRepo := pg.NewProduct()
+func Setup(ctx context.Context) ([]shutdown, error) {
+	ctx, span := monitoring.Tracer().Start(ctx, "providers.setup")
+	defer span.End()
+
+	var shutdowns []shutdown
+	var err error
+	defer func() {
+		if err != nil {
+			for i, sd := range shutdowns {
+				err := sd()
+				if err != nil {
+					otelutil.SpanLogError(
+						span, err, otelutil.WithErrorLog(ctx),
+						otelutil.WithMessage(
+							fmt.Sprintf("failed to shutdown provider #%d", i),
+						),
+					)
+				}
+			}
+		}
+	}()
+
+	dbconn, err := db.PostgresConn()
+	if err != nil {
+		return shutdowns, err
+	}
+	shutdowns = append(shutdowns, dbconn.Close)
 
 	argonHasher := hash.NewArgon()
-
-	jwtUserSigner := jwt.NewUserSigner(
-		[]byte(app.ENV().JwtSecret),
-		time.Second*time.Duration(app.ENV().JwtTTLSecond),
+	userSigner := jwt.NewUserSigner(
+		[]byte(app.ENV().JWT.Secret),
+		time.Duration(app.ENV().JWT.TTL)*time.Second,
 	)
-	refreshTokenSigner := jwt.NewRefreshTokenSigner([]byte(app.ENV().JwtRefreshSecret))
+	refreshSigner := jwt.NewRefreshTokenSigner([]byte(app.ENV().JWT.RefreshSecret))
 
-	healthCore := ht.New(dbconn)
+	userRepo := pg.NewUser()
+	tokenRepo := pg.NewTokenCredential()
+	roleRepo := pg.NewRole()
+
+	hcCore := healthcheck.New(dbconn)
 	authCore := auth.New(
 		dbconn,
-		authActivityRepo,
 		userRepo,
+		tokenRepo,
+		roleRepo,
 		argonHasher,
-		jwtUserSigner,
-		jwtUserSigner,
-		refreshTokenSigner,
-		refreshTokenSigner,
+		userSigner,
+		refreshSigner,
 	)
-	productCore := product.New(
-		dbconn,
-		productRepo,
-	)
+	userCore := user.New(dbconn, userRepo, roleRepo, argonHasher)
 
 	provider = providerConfig{
 		DB: dbconn,
-		Repo: repoConfig{
-			AuthActivity: authActivityRepo,
-			Role:         roleRepo,
-			User:         userRepo,
-			Product:      productRepo,
-		},
+
 		Core: coreConfig{
-			Health:  healthCore,
-			Auth:    authCore,
-			Product: productCore,
+			Auth:        authCore,
+			Healthcheck: hcCore,
+			User:        userCore,
 		},
 	}
+
+	return shutdowns, nil
 }
 
 func App() *providerConfig {

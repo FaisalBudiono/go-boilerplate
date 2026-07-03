@@ -6,14 +6,10 @@ type Pagination struct {
 	Total   int64
 }
 
-func NewPagination(
-	Page int64,
-	PerPage int64,
-	Total int64,
-) Pagination {
+func NewPagination(page, perPage, total int64) Pagination {
 	return Pagination{
-		Page:    Page,
-		PerPage: PerPage,
-		Total:   Total,
+		Page:    page,
+		PerPage: perPage,
+		Total:   total,
 	}
 }

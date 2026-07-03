@@ -1,0 +1,27 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/logout"
+  method: POST
+  body:
+    type: json
+    content: ""
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 5438f78e91112f692d69fc281b2425f3
+    - key: date
+      value: Fri, 03 Jul 2026 22:16:47 GMT
+    - key: content-length
+      value: "187"
+  body:
+    type: json
+    content: |
+      {"message":"Structure body/param might be invalid.","errorCode":"invalid-structure-validation","traceID":"5438f78e91112f692d69fc281b2425f3","meta":{"refreshToken":[{"code":"required"}]}}
+order: 3666409223400076
+name: 422 invalid param

@@ -1,0 +1,25 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/health"
+  method: GET
+response:
+  statusCode: 503
+  statusText: Service Unavailable
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 794f079ac339c4b85759c130a058aa25
+    - key: date
+      value: Fri, 03 Jul 2026 22:01:26 GMT
+    - key: content-length
+      value: "143"
+  body:
+    type: json
+    content: >
+      {"healthy":false,"dependencies":{"database":"unhealthy: pq: password
+      authentication failed for user \"postgres\" (28P01)"},"version":"latest"}
+order: 2781180687479982
+name: 503 not healthy

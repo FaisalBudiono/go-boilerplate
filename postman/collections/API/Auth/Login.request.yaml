@@ -1,0 +1,23 @@
+$kind: http-request
+name: Login
+url: "{{API_URL}}/auth/login"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "email": "{{LOGIN_EMAIL}}",
+        "password": "{{LOGIN_PASSWORD}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const code = pm.response.code
+      if (code < 400) {
+          const res=  pm.response.json();
+          pm.environment.set("ACCESS_TOKEN", res.data.accessToken);
+          pm.environment.set("REFRESH_TOKEN", res.data.refreshToken);
+      }
+    language: text/javascript
+examples: .resources/Login.resources/examples
+order: 1783116161214

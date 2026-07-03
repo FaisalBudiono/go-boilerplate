@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/refresh"
+  method: PUT
+  body:
+    type: json
+    content: |-
+      {
+          "refreshToken": 123
+      }
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: a872d19a9d54dbc24f736495b66747eb
+    - key: date
+      value: Fri, 03 Jul 2026 22:14:12 GMT
+    - key: content-length
+      value: "205"
+  body:
+    type: json
+    content: |
+      {"message":"Structure body/param might be invalid.","errorCode":"invalid-structure-validation","traceID":"a872d19a9d54dbc24f736495b66747eb","meta":{"refreshToken":[{"code":"string"},{"code":"required"}]}}
+order: 3164590722661098
+name: 422 invalid param

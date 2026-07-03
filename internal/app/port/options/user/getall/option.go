@@ -1,0 +1,21 @@
+package getall
+
+import "FaisalBudiono/go-boilerplate/internal/app/domain"
+
+type queryOpt struct {
+	Roles []domain.Role
+}
+
+func NewQueryOpt() *queryOpt {
+	return &queryOpt{
+		Roles: []domain.Role{},
+	}
+}
+
+type QueryOption func(*queryOpt)
+
+func WithRoleFlags(roles ...domain.Role) QueryOption {
+	return func(qo *queryOpt) {
+		qo.Roles = roles
+	}
+}

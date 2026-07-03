@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/users"
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+          "name": "Normal User",
+          "email": "normal2@example.com",
+          "password": "qwerty1",
+          "roles": []
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 093135cb60848d5679831a8be887163d
+    - key: date
+      value: Fri, 03 Jul 2026 22:53:21 GMT
+    - key: content-length
+      value: "112"
+  body:
+    type: json
+    content: |
+      {"message":"Email already exists","errorCode":"user.email.exists","traceID":"093135cb60848d5679831a8be887163d"}
+order: 3111250493489839
+name: 409 email duplicated

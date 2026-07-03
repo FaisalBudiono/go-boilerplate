@@ -1,0 +1,31 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/login"
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+          "email": "{{LOGIN_EMAIL}}",
+          "password": "{{LOGIN_PASSWORD}}"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 07086106193692c77e4df552872b9641
+    - key: date
+      value: Fri, 03 Jul 2026 22:04:23 GMT
+    - key: content-length
+      value: "583"
+  body:
+    type: json
+    content: |
+      {"data":{"tokenType":"Bearer","accessToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODMxMTY0NjMsImlhdCI6MTc4MzExNjI2MywidWlkIjoiMSIsImxvZ2luTWV0aG9kIjoiZW1haWwiLCJsb2dpbklEIjoiZmFrZXVjdWxAZ21haWwuY29tIn0.XLlAmUNor3APpzHxK8IAnFj2k8-QGh5Wghs7RyH4KeA","refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODMyMDI2NjMsImlhdCI6MTc4MzExNjI2MywiY2xpZW50SUQiOiJhMzY0ZDFhMi1iOTE4LTRlODEtOGRiNC0zOWY3YzcwMTk2NzMiLCJjbGllbnRTZWNyZXQiOiJJN3Fwd29LTGp5STJhR3d5M21zajliZjFoUmc3bGhBRlpKblZzZ1FrNFlCOUZmMzNuNm12VFN1OFZrM0JITEo2In0.SchlkUou5ODo-uQXGqkZpmEX_wSo6Tcg4tu1yNP8fgI"}}
+order: 4372741511738402
+name: 200 ok

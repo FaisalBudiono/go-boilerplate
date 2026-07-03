@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/users?page=1a&roles=asd"
+  method: GET
+  queryParams:
+    - key: page
+      value: 1a
+    - key: per_page
+      value: "15"
+      disabled: true
+    - key: roles
+      value: asd
+  body:
+    type: json
+    content: |-
+      {
+          "name": "Normal User",
+          "email": "normal@example.com",
+          "password": "qwerty1",
+          "roles": []
+      }
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 24bf5c4e8dcd492a5bad2263f75d36bd
+    - key: date
+      value: Fri, 03 Jul 2026 23:26:02 GMT
+    - key: content-length
+      value: "236"
+  body:
+    type: json
+    content: |
+      {"message":"Structure body/param might be invalid.","errorCode":"invalid-structure-validation","traceID":"24bf5c4e8dcd492a5bad2263f75d36bd","meta":{"page":[{"code":"number"}],"roles":[{"code":"enum","message":"Only accept: [admin]"}]}}
+order: 2602539044825428
+name: 422 invalid param

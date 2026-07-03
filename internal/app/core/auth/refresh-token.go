@@ -1,64 +1,103 @@
 package auth
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/domain"
-	"FaisalBudiono/go-boilerplate/internal/app/domain/domid"
-	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
+	"log/slog"
 
-	"github.com/ztrue/tracerr"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/errs"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/domain"
+	"FaisalBudiono/go-boilerplate/internal/app/port"
 )
 
-type inputRefreshToken interface {
+type reqRefreshToken interface {
 	Context() context.Context
 	RefreshToken() string
 }
 
-func (srv *Auth) RefreshToken(req inputRefreshToken) (domain.Token, error) {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.refreshToken")
+func (srv *Auth) RefreshToken(req reqRefreshToken) (domain.TokenPair, error) {
+	ctx, span := monitoring.Tracer().Start(req.Context(), srv.spanName("refresh-token"))
 	defer span.End()
 
 	refreshToken := req.RefreshToken()
-	payload, err := srv.refreshTokenPayloadParser.ParsePayload(refreshToken)
-	if err != nil {
-		isInvalidTokenErr := errors.Is(err, jwt.ErrTokenMalformed) ||
-			errors.Is(err, jwt.ErrSignatureInvalid) ||
-			errors.Is(err, jwt.ErrTokenExpired)
 
-		if isInvalidTokenErr {
-			return domain.Token{}, tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))
+	emptyVal := domain.TokenPair{}
+
+	parsedToken, err := srv.jwtRefreshSigner.Parse(refreshToken)
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			monitoring.Logger().DebugContext(
+				ctx, "refresh token expired",
+				slog.Any("err", err),
+			)
+
+			return emptyVal, errors.Join(ErrTokenExpired, err)
 		}
 
-		return domain.Token{}, err
-	}
+		if errs.Is(err, jwt.ErrTokenMalformed, jwt.ErrSignatureInvalid) {
+			monitoring.Logger().DebugContext(
+				ctx, "refresh token invalid",
+				slog.Any("err", err),
+			)
 
-	tx, err := srv.db.BeginTx(ctx, nil)
-	if err != nil {
-		return domain.Token{}, tracerr.Wrap(err)
-	}
-	defer tx.Rollback()
-
-	userID, err := srv.authActivityRepo.LastActivityByPayload(ctx, tx, payload)
-	if err != nil {
-		if errors.Is(err, portout.ErrDataNotFound) {
-			return domain.Token{}, tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))
+			return emptyVal, errors.Join(ErrTokenInvalid, err)
 		}
 
-		return domain.Token{}, err
+		otelutil.SpanLogError(
+			span, err,
+			otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to parse refresh token"),
+		)
+
+		return emptyVal, err
 	}
 
-	accessToken, err := srv.jwtUserSigner.Sign(domain.NewUserBasicInfo(domid.UserID(userID)))
+	tc, err := srv.tokenRepo.FindByClientID(ctx, srv.db, parsedToken.ClientID)
 	if err != nil {
-		return domain.Token{}, err
+		if errors.Is(err, port.ErrDataNotFound) {
+			monitoring.Logger().DebugContext(
+				ctx, "clientID not found",
+				slog.Any("err", err),
+			)
+			return emptyVal, ErrInvalidCredentials
+		}
+
+		otelutil.SpanLogError(
+			span, err, otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to find clientID"),
+		)
+		return emptyVal, err
 	}
 
-	err = tx.Commit()
+	ok, err := srv.hasher.Verify(parsedToken.ClientSecret, tc.HashedSecret)
 	if err != nil {
-		return domain.Token{}, tracerr.Wrap(err)
+		otelutil.SpanLogError(
+			span, err, otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to verify client secret"),
+		)
+		return emptyVal, err
 	}
 
-	return domain.NewToken(accessToken, refreshToken), nil
+	if !ok {
+		monitoring.Logger().DebugContext(ctx, "client secret not match")
+		return emptyVal, ErrInvalidCredentials
+	}
+
+	accessToken, err := srv.jwtUserSigner.Sign(
+		domain.NewUserTokenInfo(tc.UserID, tc.LoginMethod, tc.LoginID),
+	)
+	if err != nil {
+		otelutil.SpanLogError(
+			span, err,
+			otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to sign access token"),
+		)
+
+		return emptyVal, err
+	}
+
+	return domain.NewTokenPair(accessToken, refreshToken), nil
 }
