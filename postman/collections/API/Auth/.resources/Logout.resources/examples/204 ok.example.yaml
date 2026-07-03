@@ -1,0 +1,25 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/logout"
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+          "refreshToken": "{{REFRESH_TOKEN}}"
+      }
+response:
+  statusCode: 204
+  statusText: No Content
+  headers:
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: bbf7ec458a8de59eddc15918328dd378
+    - key: date
+      value: Fri, 03 Jul 2026 22:15:41 GMT
+  body:
+    type: text
+    content: ""
+order: 1783116943313
+name: 204 ok

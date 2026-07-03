@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/refresh"
+  method: PUT
+  body:
+    type: json
+    content: |-
+      {
+          "refreshToken": "{{REFRESH_TOKEN}}"
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: c069ccafdb6ddccd6bf91780d8ba5b18
+    - key: date
+      value: Fri, 03 Jul 2026 22:13:02 GMT
+    - key: content-length
+      value: "106"
+  body:
+    type: json
+    content: |
+      {"message":"Token expired","errorCode":"auth.token.expired","traceID":"c069ccafdb6ddccd6bf91780d8ba5b18"}
+order: 2070676658993635
+name: 401 token expired

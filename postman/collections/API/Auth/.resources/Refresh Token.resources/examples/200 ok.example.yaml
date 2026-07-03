@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/refresh"
+  method: PUT
+  body:
+    type: json
+    content: |-
+      {
+          "refreshToken": "{{REFRESH_TOKEN}}"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: efd2a4d53f75755ae00fab49ba49ab90
+    - key: date
+      value: Fri, 03 Jul 2026 22:10:05 GMT
+    - key: content-length
+      value: "583"
+  body:
+    type: json
+    content: |
+      {"data":{"tokenType":"Bearer","accessToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODMxMTY4MDUsImlhdCI6MTc4MzExNjYwNSwidWlkIjoiMSIsImxvZ2luTWV0aG9kIjoiZmFrZXVjdWxAZ21haWwuY29tIiwibG9naW5JRCI6ImVtYWlsIn0.6NVObfTB2sZBx84_xrjUbBYR_jUV6Z2rHGzsCP09UiQ","refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODMyMDI3NDQsImlhdCI6MTc4MzExNjM0NCwiY2xpZW50SUQiOiJmMjAyMjZjZS0yYjNhLTQwYmMtOWI2Ny1iNzc0MDViYmRjMjQiLCJjbGllbnRTZWNyZXQiOiI3enJBVnYxV2J2M2pweEVVeW5KZWl2RzhDT0p6eFU4bDhxbk05NjU4NEluQTJtU1dXREdkczhWWmxYWUg0eDU5In0.UMV-FKKKCgT4ST0ATc3Dt5_c4EfTz1gJRDmqybrWv1g"}}
+order: 1783116606782
+name: 200 ok

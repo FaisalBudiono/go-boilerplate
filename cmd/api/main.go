@@ -1,14 +1,19 @@
 package main
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/http"
-	"FaisalBudiono/go-boilerplate/internal/app/adapter/otel"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/providers"
 	"context"
+	"fmt"
+	"log"
+	"os"
 
-	"github.com/labstack/echo/v4"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
+	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/providers"
+
+	"github.com/labstack/echo/v5"
 )
 
 func main() {
@@ -16,27 +21,56 @@ func main() {
 
 	ctx := context.Background()
 
+	if err := run(ctx); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context) error {
 	shutdown, err := otel.SetupOTelSDK(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer func() {
 		err := shutdown(ctx)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 	}()
 
 	tracer := otel.NewTracer(app.ENV().AppName)
 	logger := otel.NewLogger(app.ENV().AppName)
 
-	monitorings.SetUp(tracer, logger)
-	providers.SetUp()
+	monitoring.SetUp(tracer, logger)
+
+	ctx, span := monitoring.Tracer().Start(ctx, "app.main")
+	defer span.End()
+
+	shutdowns, err := providers.Setup(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		for i, sd := range shutdowns {
+			err := sd()
+			if err != nil {
+				otelutil.SpanLogError(
+					span, err,
+					otelutil.WithErrorLog(ctx),
+					otelutil.WithMessage(fmt.Sprintf("failed to shutdown provider #%d", i)),
+				)
+			}
+		}
+	}()
 
 	e := echo.New()
 
 	http.Middleware(e)
 	http.Routes(e)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	err = e.Start(":8080")
+	e.Logger.ErrorContext(ctx, err.Error())
+
+	return err
 }

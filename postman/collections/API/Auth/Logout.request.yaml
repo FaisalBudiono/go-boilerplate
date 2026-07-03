@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{API_URL}}/auth/logout"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "refreshToken": "{{REFRESH_TOKEN}}"
+    }
+examples: .resources/Logout.resources/examples
+order: 458657414725945

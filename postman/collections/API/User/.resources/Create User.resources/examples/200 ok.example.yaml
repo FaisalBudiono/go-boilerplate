@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/users"
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+          "name": "Normal User",
+          "email": "normal@example.com",
+          "password": "qwerty1",
+          "roles": []
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 85cf38c28635b8f72134a27dc07455fe
+    - key: date
+      value: Fri, 03 Jul 2026 23:04:12 GMT
+    - key: content-length
+      value: "151"
+  body:
+    type: json
+    content: |
+      {"data":{"id":"7","name":"Normal User","email":"normal@example.com","roles":[],"createdAt":"2026-07-03T23:04:12Z","updatedAt":"2026-07-03T23:04:12Z"}}
+order: 3111250493476926
+name: 200 ok

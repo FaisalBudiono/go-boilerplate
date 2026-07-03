@@ -1,3 +1,5 @@
 .env
-**/dummy*
-tmp/*
+
+.postman
+
+golangci-lint-report.txt

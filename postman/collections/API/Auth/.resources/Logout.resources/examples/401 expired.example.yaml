@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/auth/logout"
+  method: POST
+  body:
+    type: json
+    content: |-
+      {
+          "refreshToken": "{{REFRESH_TOKEN}}"
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 93868eab4a179768facd70d9bade6747
+    - key: date
+      value: Fri, 03 Jul 2026 22:16:39 GMT
+    - key: content-length
+      value: "106"
+  body:
+    type: json
+    content: |
+      {"message":"Token expired","errorCode":"auth.token.expired","traceID":"93868eab4a179768facd70d9bade6747"}
+order: 3494469426759046
+name: 401 expired

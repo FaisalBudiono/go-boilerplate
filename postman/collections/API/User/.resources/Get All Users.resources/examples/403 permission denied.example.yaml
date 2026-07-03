@@ -1,0 +1,43 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/users"
+  method: GET
+  queryParams:
+    - key: page
+      value: "1"
+      disabled: true
+    - key: per_page
+      value: "15"
+      disabled: true
+    - key: roles
+      value: ""
+      disabled: true
+  body:
+    type: json
+    content: |-
+      {
+          "name": "Normal User",
+          "email": "normal@example.com",
+          "password": "qwerty1",
+          "roles": []
+      }
+response:
+  statusCode: 403
+  statusText: Forbidden
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 8e42560059243e92ad6c0cf6123cfdbf
+    - key: date
+      value: Fri, 03 Jul 2026 23:24:44 GMT
+    - key: content-length
+      value: "114"
+  body:
+    type: json
+    content: |
+      {"message":"Permission denied","errorCode":"auth.permission.denied","traceID":"8e42560059243e92ad6c0cf6123cfdbf"}
+order: 2602538962434037
+name: 403 permission denied

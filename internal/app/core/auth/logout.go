@@ -1,55 +1,92 @@
 package auth
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitorings"
-	"FaisalBudiono/go-boilerplate/internal/app/port/portout"
 	"context"
 	"errors"
+	"log/slog"
 
-	"github.com/ztrue/tracerr"
+	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/errs"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
+	"FaisalBudiono/go-boilerplate/internal/app/port"
 )
 
-type inputLogout interface {
+type reqLogout interface {
 	Context() context.Context
 	RefreshToken() string
 }
 
-func (srv *Auth) Logout(req inputLogout) error {
-	ctx, span := monitorings.Tracer().Start(req.Context(), "core.auth.logout")
+func (srv *Auth) Logout(req reqLogout) error {
+	ctx, span := monitoring.Tracer().Start(req.Context(), srv.spanName("logout"))
 	defer span.End()
 
-	payload, err := srv.refreshTokenPayloadParser.ParsePayload(req.RefreshToken())
-	if err != nil {
-		isInvalidTokenErr := errors.Is(err, jwt.ErrTokenMalformed) ||
-			errors.Is(err, jwt.ErrSignatureInvalid) ||
-			errors.Is(err, jwt.ErrTokenExpired)
+	refreshToken := req.RefreshToken()
 
-		if isInvalidTokenErr {
-			return tracerr.CustomError(ErrInvalidToken, tracerr.StackTrace(err))
+	parsedToken, err := srv.jwtRefreshSigner.Parse(refreshToken)
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			monitoring.Logger().DebugContext(
+				ctx, "refresh token expired",
+				slog.Any("err", err),
+			)
+			return errors.Join(ErrTokenExpired, err)
 		}
 
+		if errs.Is(err, jwt.ErrTokenMalformed, jwt.ErrSignatureInvalid) {
+			monitoring.Logger().DebugContext(
+				ctx, "refresh token invalid",
+				slog.Any("err", err),
+			)
+			return errors.Join(ErrTokenInvalid, err)
+		}
+
+		otelutil.SpanLogError(
+			span, err,
+			otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to parse refresh token"),
+		)
 		return err
 	}
 
-	tx, err := srv.db.BeginTx(ctx, nil)
+	tc, err := srv.tokenRepo.FindByClientID(ctx, srv.db, parsedToken.ClientID)
 	if err != nil {
-		return tracerr.Wrap(err)
-	}
-	defer tx.Rollback()
-
-	err = srv.authActivityRepo.DeleteByPayload(ctx, tx, payload)
-	if err != nil {
-		if errors.Is(err, portout.ErrDataNotFound) {
-			return tracerr.CustomError(ErrTokenExpired, tracerr.StackTrace(err))
+		if errors.Is(err, port.ErrDataNotFound) {
+			monitoring.Logger().DebugContext(
+				ctx, "clientID not found",
+				slog.Any("err", err),
+			)
+			return ErrInvalidCredentials
 		}
 
+		otelutil.SpanLogError(
+			span, err, otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to find clientID"),
+		)
 		return err
 	}
 
-	err = tx.Commit()
+	ok, err := srv.hasher.Verify(parsedToken.ClientSecret, tc.HashedSecret)
 	if err != nil {
-		return tracerr.Wrap(err)
+		otelutil.SpanLogError(
+			span, err, otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to verify client secret"),
+		)
+		return err
+	}
+
+	if !ok {
+		monitoring.Logger().DebugContext(ctx, "client secret not match")
+		return ErrInvalidCredentials
+	}
+
+	err = srv.tokenRepo.DeleteByClientID(ctx, srv.db, parsedToken.ClientID)
+	if err != nil {
+		otelutil.SpanLogError(
+			span, err, otelutil.WithErrorLog(ctx),
+			otelutil.WithMessage("failed to delete token credential"),
+		)
+		return err
 	}
 
 	return nil

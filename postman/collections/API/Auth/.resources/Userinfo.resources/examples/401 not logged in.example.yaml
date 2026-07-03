@@ -1,0 +1,24 @@
+$kind: http-example
+request:
+  url: "{{API_URL}}/userinfo"
+  method: GET
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    - key: content-type
+      value: application/json
+    - key: vary
+      value: Origin
+    - key: x-request-id
+      value: 9bd88d1f6e5a05376d6722b35cfd3914
+    - key: date
+      value: Fri, 03 Jul 2026 22:11:26 GMT
+    - key: content-length
+      value: "121"
+  body:
+    type: json
+    content: |
+      {"message":"Authorization header required","errorCode":"auth.unauthorized","traceID":"9bd88d1f6e5a05376d6722b35cfd3914"}
+order: 4390945438675109
+name: 401 not logged in
