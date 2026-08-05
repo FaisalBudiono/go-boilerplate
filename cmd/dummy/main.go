@@ -8,7 +8,7 @@ import (
 
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 )
 
 func main() {
@@ -36,9 +36,9 @@ func run(ctx context.Context) error {
 	tracer := otel.NewTracer(app.ENV().AppName)
 	logger := otel.NewLogger(app.ENV().AppName)
 
-	monitoring.SetUp(tracer, logger)
+	mon.SetUp(tracer, logger)
 
-	ctx, span := monitoring.Tracer().Start(ctx, "dummy.main")
+	ctx, span := mon.Tracer().Start(ctx, "dummy.main")
 	defer span.End()
 
 	// icl := domain.NewImmigrationClearanceLogData(

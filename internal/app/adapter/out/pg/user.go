@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -44,10 +44,10 @@ type User struct{}
 func (u *User) FindByEmail(
 	ctx context.Context, tx port.DBTX, email string,
 ) (domain.UserWithPassword, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, u.sName("find-by-email"))
+	ctx, span := mon.Tracer().Start(ctx, u.sName("find-by-email"))
 	defer span.End()
 
-	monitoring.Logger().InfoContext(
+	mon.Logger().InfoContext(
 		ctx, "input", slog.String("email", email),
 	)
 
@@ -69,7 +69,7 @@ func (u *User) FindByEmail(
 	`
 	args := []any{email}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -102,14 +102,14 @@ func (u *User) FindByEmail(
 func (u *User) GetMap(
 	ctx context.Context, tx port.DBTX, ids []string,
 ) (map[string]domain.User, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, u.sName("get-map"))
+	ctx, span := mon.Tracer().Start(ctx, u.sName("get-map"))
 	defer span.End()
 
-	monitoring.Logger().DebugContext(ctx, "ids", slog.Any("ids", ids))
+	mon.Logger().DebugContext(ctx, "ids", slog.Any("ids", ids))
 
 	res := map[string]domain.User{}
 	if len(ids) == 0 {
-		monitoring.Logger().WarnContext(ctx, "user ids is empty")
+		mon.Logger().WarnContext(ctx, "user ids is empty")
 		return res, nil
 	}
 
@@ -134,7 +134,7 @@ func (u *User) GetMap(
 	for _, rawID := range ids {
 		realID, err := strconv.ParseInt(rawID, 10, 64)
 		if err != nil {
-			monitoring.Logger().ErrorContext(
+			mon.Logger().ErrorContext(
 				ctx, "failed to parse userID", slog.String("userID", rawID),
 			)
 			realID = -1
@@ -142,7 +142,7 @@ func (u *User) GetMap(
 		args = append(args, realID)
 	}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -195,7 +195,7 @@ func (u *User) GetPaginated(
 	page int64, perPage int64,
 	opts ...getallopt.QueryOption,
 ) ([]domain.User, int64, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, u.sName("get-paginated"))
+	ctx, span := mon.Tracer().Start(ctx, u.sName("get-paginated"))
 	defer span.End()
 
 	qo := getallopt.NewQueryOpt()
@@ -203,7 +203,7 @@ func (u *User) GetPaginated(
 		opt(qo)
 	}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "input",
 		slog.Int64("page", page),
 		slog.Int64("perPage", perPage),
@@ -261,7 +261,7 @@ func (u *User) GetPaginated(
 		offset,
 	)
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -317,7 +317,7 @@ func (u *User) GetPaginated(
 		strings.Join(conditions, " AND "),
 	)
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "count query",
 		slog.String("query", queryutil.Clean(countQuery)),
 		slog.Any("args", args),
@@ -339,10 +339,10 @@ func (u *User) GetPaginated(
 func (u *User) Insert(
 	ctx context.Context, tx port.DBTX, data domain.UserData,
 ) (string, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, u.sName("insert"))
+	ctx, span := mon.Tracer().Start(ctx, u.sName("insert"))
 	defer span.End()
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "input", slog.Any("data", data),
 	)
 
@@ -356,7 +356,7 @@ func (u *User) Insert(
 	`
 	args := []any{data.Name, data.Email, data.HashedPassword}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query", slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
 	)

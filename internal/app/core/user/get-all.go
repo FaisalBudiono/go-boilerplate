@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/sliceutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -22,7 +22,7 @@ type reqGetAll interface {
 func (srv *User) GetAll(
 	req reqGetAll,
 ) ([]domain.UserEagerLoad, domain.Pagination, error) {
-	ctx, span := monitoring.Tracer().Start(req.Context(), srv.sName("get-all"))
+	ctx, span := mon.Tracer().Start(req.Context(), srv.sName("get-all"))
 	defer span.End()
 
 	page := req.Page()
@@ -30,7 +30,7 @@ func (srv *User) GetAll(
 	roleFlags := req.RoleFlags()
 	actor := req.Actor()
 
-	monitoring.Logger().InfoContext(
+	mon.Logger().InfoContext(
 		ctx, "input",
 		slog.Int64("page", page),
 		slog.Int64("perPage", perPage),

@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 
 	"github.com/labstack/echo/v5"
@@ -53,7 +53,7 @@ func HandleUnprocessable(
 	err error,
 ) error {
 	if uerr, ok := errors.AsType[*UnprocessableErr](err); ok {
-		monitoring.Logger().DebugContext(
+		mon.Logger().DebugContext(
 			ctx, "unprocessable error",
 			slog.Any("error", err),
 		)
