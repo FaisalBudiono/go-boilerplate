@@ -9,7 +9,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/providers"
 
@@ -42,9 +42,9 @@ func run(ctx context.Context) error {
 	tracer := otel.NewTracer(app.ENV().AppName)
 	logger := otel.NewLogger(app.ENV().AppName)
 
-	monitoring.SetUp(tracer, logger)
+	mon.SetUp(tracer, logger)
 
-	ctx, span := monitoring.Tracer().Start(ctx, "app.main")
+	ctx, span := mon.Tracer().Start(ctx, "app.main")
 	defer span.End()
 
 	shutdowns, err := providers.Setup(ctx)

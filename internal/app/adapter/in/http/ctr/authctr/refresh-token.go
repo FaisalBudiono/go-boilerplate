@@ -10,7 +10,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/rules"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 
@@ -19,7 +19,7 @@ import (
 
 func RefreshToken(srv *auth.Auth) echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.route.auth.refresh-token")
+		ctx, span := mon.Tracer().Start(c.Request().Context(), "http.route.auth.refresh-token")
 		defer span.End()
 
 		r := &reqRefreshToken{ctx: ctx}
@@ -70,7 +70,7 @@ type reqRefreshToken struct {
 }
 
 func (r *reqRefreshToken) bind(c *echo.Context) error {
-	ctx, span := monitoring.Tracer().Start(r.ctx, "http.route.auth.refresh-token.bind")
+	ctx, span := mon.Tracer().Start(r.ctx, "http.route.auth.refresh-token.bind")
 	defer span.End()
 
 	uerr := httpfmt.NewUnprocessableErr(httpfmt.WithTraceID(span))

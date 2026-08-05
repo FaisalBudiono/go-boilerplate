@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/port"
@@ -23,7 +23,7 @@ type reqCreate interface {
 }
 
 func (srv *User) Create(req reqCreate) (domain.UserEagerLoad, error) {
-	ctx, span := monitoring.Tracer().Start(req.Context(), srv.sName("create"))
+	ctx, span := mon.Tracer().Start(req.Context(), srv.sName("create"))
 	defer span.End()
 
 	actor := req.Actor()
@@ -32,7 +32,7 @@ func (srv *User) Create(req reqCreate) (domain.UserEagerLoad, error) {
 	password := req.Password()
 	roles := req.Roles()
 
-	monitoring.Logger().InfoContext(
+	mon.Logger().InfoContext(
 		ctx, "input",
 		slog.Any("actor", actor),
 		slog.String("name", name),

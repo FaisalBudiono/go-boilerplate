@@ -7,7 +7,7 @@ import (
 
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/errs"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/port"
 )
@@ -18,7 +18,7 @@ type reqLogout interface {
 }
 
 func (srv *Auth) Logout(req reqLogout) error {
-	ctx, span := monitoring.Tracer().Start(req.Context(), srv.spanName("logout"))
+	ctx, span := mon.Tracer().Start(req.Context(), srv.spanName("logout"))
 	defer span.End()
 
 	refreshToken := req.RefreshToken()
@@ -26,7 +26,7 @@ func (srv *Auth) Logout(req reqLogout) error {
 	parsedToken, err := srv.jwtRefreshSigner.Parse(refreshToken)
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "refresh token expired",
 				slog.Any("err", err),
 			)
@@ -34,7 +34,7 @@ func (srv *Auth) Logout(req reqLogout) error {
 		}
 
 		if errs.Is(err, jwt.ErrTokenMalformed, jwt.ErrSignatureInvalid) {
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "refresh token invalid",
 				slog.Any("err", err),
 			)
@@ -52,7 +52,7 @@ func (srv *Auth) Logout(req reqLogout) error {
 	tc, err := srv.tokenRepo.FindByClientID(ctx, srv.db, parsedToken.ClientID)
 	if err != nil {
 		if errors.Is(err, port.ErrDataNotFound) {
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "clientID not found",
 				slog.Any("err", err),
 			)
@@ -76,7 +76,7 @@ func (srv *Auth) Logout(req reqLogout) error {
 	}
 
 	if !ok {
-		monitoring.Logger().DebugContext(ctx, "client secret not match")
+		mon.Logger().DebugContext(ctx, "client secret not match")
 		return ErrInvalidCredentials
 	}
 

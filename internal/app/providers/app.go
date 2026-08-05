@@ -14,7 +14,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/user"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/hash"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 )
 
@@ -35,7 +35,7 @@ var provider = providerConfig{}
 type shutdown func() error
 
 func Setup(ctx context.Context) ([]shutdown, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, "providers.setup")
+	ctx, span := mon.Tracer().Start(ctx, "providers.setup")
 	defer span.End()
 
 	var shutdowns []shutdown

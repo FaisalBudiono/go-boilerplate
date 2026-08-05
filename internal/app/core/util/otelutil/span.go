@@ -1,10 +1,9 @@
 package otelutil
 
 import (
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"context"
 	"log/slog"
-
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
 
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -55,7 +54,7 @@ func SpanLogError(span trace.Span, err error, opts ...spanLogOption) {
 			logMsgs = append(logMsgs, lm)
 		}
 
-		monitoring.Logger().ErrorContext(cfg.logCTX, msg, logMsgs...)
+		mon.Logger().ErrorContext(cfg.logCTX, msg, logMsgs...)
 	}
 
 	span.SetStatus(codes.Error, msg)

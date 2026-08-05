@@ -9,7 +9,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/rules"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 
@@ -18,7 +18,7 @@ import (
 
 func Logout(srv *auth.Auth) echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.route.auth.logout")
+		ctx, span := mon.Tracer().Start(c.Request().Context(), "http.route.auth.logout")
 		defer span.End()
 
 		r := &reqLogout{ctx: ctx}
@@ -73,7 +73,7 @@ type reqLogout struct {
 }
 
 func (r *reqLogout) bind(c *echo.Context) error {
-	ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.route.auth.logout.bind")
+	ctx, span := mon.Tracer().Start(c.Request().Context(), "http.route.auth.logout.bind")
 	defer span.End()
 
 	uerr := httpfmt.NewUnprocessableErr(httpfmt.WithTraceID(span))

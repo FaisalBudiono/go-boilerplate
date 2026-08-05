@@ -11,7 +11,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http/req"
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
@@ -24,7 +24,7 @@ import (
 func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
-			ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.middleware.auth")
+			ctx, span := mon.Tracer().Start(c.Request().Context(), "http.middleware.auth")
 			defer span.End()
 
 			cfg := newAuthConfig()
@@ -32,7 +32,7 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 				opt(cfg)
 			}
 
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "auth config",
 				slog.Any("allowedRoles", cfg.allowedRoles),
 				slog.Bool("isMust", cfg.isMust),
@@ -41,7 +41,7 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 
 			authHeader := c.Request().Header.Get("authorization")
 			if authHeader == "" {
-				monitoring.Logger().InfoContext(ctx, "missing authorization header")
+				mon.Logger().InfoContext(ctx, "missing authorization header")
 
 				if !cfg.isMust {
 					return next(c)
@@ -58,7 +58,7 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 
 			parts := strings.Split(authHeader, " ")
 			if len(parts) != 2 {
-				monitoring.Logger().InfoContext(
+				mon.Logger().InfoContext(
 					ctx, "invalid authorization header format",
 					slog.String("authHeader", authHeader),
 				)
@@ -79,7 +79,7 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 			})
 			if err != nil {
 				if errors.Is(err, auth.ErrTokenExpired) {
-					monitoring.Logger().InfoContext(ctx, "token expired")
+					mon.Logger().InfoContext(ctx, "token expired")
 
 					return c.JSON(
 						http.StatusUnauthorized,
@@ -92,7 +92,7 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 				}
 
 				if errors.Is(err, auth.ErrTokenInvalid) {
-					monitoring.Logger().DebugContext(ctx, "invalid token")
+					mon.Logger().DebugContext(ctx, "invalid token")
 
 					return c.JSON(
 						http.StatusUnauthorized,
@@ -128,7 +128,7 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 				attribute.String("loginMethod", string(user.Info.LoginMethod)),
 				attribute.StringSlice("roles", roleStrings),
 			))
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "user authenticated",
 				slog.String("userID", user.Info.ID),
 				slog.String("email", user.User.User.Email),
@@ -141,7 +141,7 @@ func AuthMiddleware(authCore *auth.Auth, opts ...authOption) echo.MiddlewareFunc
 
 			if len(cfg.allowedRoles) > 0 {
 				if !user.User.HasRoles(cfg.allowedRoles...) {
-					monitoring.Logger().WarnContext(ctx, "user is not allowed to access this resource")
+					mon.Logger().WarnContext(ctx, "user is not allowed to access this resource")
 
 					allowedRoles := make([]string, len(cfg.allowedRoles))
 					for i, role := range cfg.allowedRoles {

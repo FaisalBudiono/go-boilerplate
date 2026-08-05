@@ -6,7 +6,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http/req"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http/res"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 
 	"github.com/labstack/echo/v5"
@@ -14,7 +14,7 @@ import (
 
 func Userinfo() echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.route.auth.userinfo")
+		ctx, span := mon.Tracer().Start(c.Request().Context(), "http.route.auth.userinfo")
 		defer span.End()
 
 		actor, err := req.AuthUser(ctx)
