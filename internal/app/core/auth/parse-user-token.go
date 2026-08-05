@@ -7,7 +7,7 @@ import (
 
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/jwt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/errs"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 )
@@ -18,7 +18,7 @@ type reqParseUser interface {
 }
 
 func (srv *Auth) ParseUser(req reqParseUser) (domain.Userinfo, error) {
-	ctx, span := monitoring.Tracer().Start(req.Context(), srv.spanName("parse-user"))
+	ctx, span := mon.Tracer().Start(req.Context(), srv.spanName("parse-user"))
 	defer span.End()
 
 	accessToken := req.AccessToken()
@@ -28,7 +28,7 @@ func (srv *Auth) ParseUser(req reqParseUser) (domain.Userinfo, error) {
 	uTokenInfo, err := srv.jwtUserSigner.Parse(accessToken)
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "access token expired",
 				slog.Any("err", err),
 			)
@@ -36,7 +36,7 @@ func (srv *Auth) ParseUser(req reqParseUser) (domain.Userinfo, error) {
 		}
 
 		if errs.Is(err, jwt.ErrTokenMalformed, jwt.ErrSignatureInvalid) {
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "access token invalid",
 				slog.Any("err", err),
 			)
@@ -61,7 +61,7 @@ func (srv *Auth) ParseUser(req reqParseUser) (domain.Userinfo, error) {
 	}
 	u, ok := userMap[uTokenInfo.ID]
 	if !ok {
-		monitoring.Logger().WarnContext(
+		mon.Logger().WarnContext(
 			ctx, "user not found",
 			slog.String("userID", uTokenInfo.ID),
 		)

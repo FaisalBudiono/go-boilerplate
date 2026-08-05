@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/rnd"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -19,13 +19,13 @@ type reqLoginWithEmail interface {
 }
 
 func (srv *Auth) LoginWithEmail(req reqLoginWithEmail) (domain.TokenPair, error) {
-	ctx, span := monitoring.Tracer().Start(req.Context(), srv.spanName("login-with-email"))
+	ctx, span := mon.Tracer().Start(req.Context(), srv.spanName("login-with-email"))
 	defer span.End()
 
 	email := req.Email()
 	password := req.Password()
 
-	monitoring.Logger().InfoContext(
+	mon.Logger().InfoContext(
 		ctx, "input",
 		slog.String("email", email),
 	)
@@ -66,7 +66,7 @@ func (srv *Auth) LoginWithEmail(req reqLoginWithEmail) (domain.TokenPair, error)
 	u, err := srv.userRepo.FindByEmail(ctx, tx, email)
 	if err != nil {
 		if errors.Is(err, port.ErrDataNotFound) {
-			monitoring.Logger().DebugContext(ctx, "user not found")
+			mon.Logger().DebugContext(ctx, "user not found")
 			return emptyVal, errors.Join(ErrInvalidCredentials, err)
 		}
 
@@ -89,7 +89,7 @@ func (srv *Auth) LoginWithEmail(req reqLoginWithEmail) (domain.TokenPair, error)
 	}
 
 	if !match {
-		monitoring.Logger().WarnContext(ctx, "password mismatch")
+		mon.Logger().WarnContext(ctx, "password mismatch")
 		return emptyVal, ErrInvalidCredentials
 	}
 

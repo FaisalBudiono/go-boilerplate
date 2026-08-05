@@ -1,4 +1,4 @@
-package monitoring
+package mon
 
 import (
 	"io"

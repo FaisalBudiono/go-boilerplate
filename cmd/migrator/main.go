@@ -11,7 +11,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/db"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 )
 
 func main() {
@@ -39,9 +39,9 @@ func run(ctx context.Context) error {
 	tracer := otel.NewTracer(app.ENV().AppName)
 	logger := otel.NewLogger(app.ENV().AppName)
 
-	monitoring.SetUp(tracer, logger)
+	mon.SetUp(tracer, logger)
 
-	ctx, span := monitoring.Tracer().Start(ctx, "migrator.main")
+	ctx, span := mon.Tracer().Start(ctx, "migrator.main")
 	defer span.End()
 
 	args := os.Args

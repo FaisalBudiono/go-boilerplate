@@ -12,7 +12,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/rules"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
 
@@ -21,7 +21,7 @@ import (
 
 func LoginWithEmail(srv *auth.Auth) echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.route.auth.login-with-email")
+		ctx, span := mon.Tracer().Start(c.Request().Context(), "http.route.auth.login-with-email")
 		defer span.End()
 
 		r := &reqLoginWithEmail{ctx: ctx}
@@ -34,7 +34,7 @@ func LoginWithEmail(srv *auth.Auth) echo.HandlerFunc {
 		token, err := srv.LoginWithEmail(r)
 		if err != nil {
 			if errs.Is(err, auth.ErrInvalidCredentials) {
-				monitoring.Logger().DebugContext(
+				mon.Logger().DebugContext(
 					ctx, "invalid credentials",
 					slog.Any("error", err),
 				)
@@ -74,7 +74,7 @@ func (r *reqLoginWithEmail) Email() string            { return r.email }
 func (r *reqLoginWithEmail) Password() string         { return r.password }
 
 func (r *reqLoginWithEmail) bind(c *echo.Context) error {
-	ctx, span := monitoring.Tracer().Start(r.ctx, "http.route.auth.login-with-email.bind")
+	ctx, span := mon.Tracer().Start(r.ctx, "http.route.auth.login-with-email.bind")
 	defer span.End()
 
 	uerr := httpfmt.NewUnprocessableErr(httpfmt.WithTraceID(span))

@@ -13,7 +13,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/code/invalid"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/httpfmt/rules"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/domain/errcode"
@@ -23,12 +23,12 @@ import (
 
 func GetAll(srv *user.User) echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.route.user.get-all")
+		ctx, span := mon.Tracer().Start(c.Request().Context(), "http.route.user.get-all")
 		defer span.End()
 
 		actor, err := req.AuthUser(ctx)
 		if err != nil {
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "failed to get authenticated user",
 			)
 			return c.JSON(
@@ -82,7 +82,7 @@ type reqGetAll struct {
 }
 
 func (r *reqGetAll) bind(c *echo.Context) error {
-	ctx, span := monitoring.Tracer().Start(r.ctx, "http.route.user.get-all.bind")
+	ctx, span := mon.Tracer().Start(r.ctx, "http.route.user.get-all.bind")
 	defer span.End()
 
 	uerr := httpfmt.NewUnprocessableErr(httpfmt.WithTraceID(span))

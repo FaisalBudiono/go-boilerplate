@@ -7,7 +7,7 @@ import (
 	"log/slog"
 
 	"FaisalBudiono/go-boilerplate/internal/app/core/auth/passwd"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -45,7 +45,7 @@ type admin struct {
 func (srv *admin) Name() string { return "admin" }
 
 func (srv *admin) Seed(ctx context.Context) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "seeder.admin.seed")
+	ctx, span := mon.Tracer().Start(ctx, "seeder.admin.seed")
 	defer span.End()
 
 	hashedPassword, err := srv.hasher.Hash(srv.adminPassword)
@@ -131,7 +131,7 @@ func (srv *admin) Seed(ctx context.Context) error {
 }
 
 func (srv *admin) deleteRole(ctx context.Context, tx port.DBTX) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "seeder.admin.deleteRole")
+	ctx, span := mon.Tracer().Start(ctx, "seeder.admin.deleteRole")
 	defer span.End()
 
 	query := `
@@ -142,7 +142,7 @@ func (srv *admin) deleteRole(ctx context.Context, tx port.DBTX) error {
 	`
 	args := []any{idAdmin}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -161,7 +161,7 @@ func (srv *admin) deleteRole(ctx context.Context, tx port.DBTX) error {
 }
 
 func (srv *admin) insertRole(ctx context.Context, tx port.DBTX) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "seeder.admin.insertRole")
+	ctx, span := mon.Tracer().Start(ctx, "seeder.admin.insertRole")
 	defer span.End()
 
 	query := `
@@ -172,7 +172,7 @@ func (srv *admin) insertRole(ctx context.Context, tx port.DBTX) error {
 	`
 	args := []any{idAdmin, domain.RoleAdmin.String()}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -194,7 +194,7 @@ func (srv *admin) insertRole(ctx context.Context, tx port.DBTX) error {
 type adminUpsertFunc func(ctx context.Context, tx port.DBTX, hashedPassword string) error
 
 func (srv *admin) insert(ctx context.Context, tx port.DBTX, hashedPassword string) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "seeder.admin.insert")
+	ctx, span := mon.Tracer().Start(ctx, "seeder.admin.insert")
 	defer span.End()
 
 	query := `
@@ -205,7 +205,7 @@ func (srv *admin) insert(ctx context.Context, tx port.DBTX, hashedPassword strin
 	`
 	args := []any{idAdmin, srv.adminName, srv.adminEmail, hashedPassword}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -225,7 +225,7 @@ func (srv *admin) insert(ctx context.Context, tx port.DBTX, hashedPassword strin
 }
 
 func (srv *admin) update(ctx context.Context, tx port.DBTX, hashedPassword string) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "seeder.admin.update")
+	ctx, span := mon.Tracer().Start(ctx, "seeder.admin.update")
 	defer span.End()
 
 	query := `
@@ -241,7 +241,7 @@ func (srv *admin) update(ctx context.Context, tx port.DBTX, hashedPassword strin
 	`
 	args := []any{srv.adminName, srv.adminEmail, hashedPassword, idAdmin}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -261,7 +261,7 @@ func (srv *admin) update(ctx context.Context, tx port.DBTX, hashedPassword strin
 }
 
 func (srv *admin) hasAdmin(ctx context.Context) (bool, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, "seeder.admin.hasAdmin")
+	ctx, span := mon.Tracer().Start(ctx, "seeder.admin.hasAdmin")
 	defer span.End()
 
 	var id int64
