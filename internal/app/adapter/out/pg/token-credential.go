@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -31,7 +31,7 @@ type TokenCredential struct{}
 func (t *TokenCredential) Insert(
 	ctx context.Context, tx port.DBTX, data domain.TokenCredentialData,
 ) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "adapter.pg.token-credential.insert")
+	ctx, span := mon.Tracer().Start(ctx, "adapter.pg.token-credential.insert")
 	defer span.End()
 
 	query := `
@@ -48,7 +48,7 @@ func (t *TokenCredential) Insert(
 		data.LoginID,
 	}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -69,7 +69,7 @@ func (t *TokenCredential) Insert(
 func (t *TokenCredential) DeleteByClientID(
 	ctx context.Context, tx port.DBTX, clientID string,
 ) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "adapter.pg.token-credential.delete-by-client-id")
+	ctx, span := mon.Tracer().Start(ctx, "adapter.pg.token-credential.delete-by-client-id")
 	defer span.End()
 
 	query := `
@@ -80,7 +80,7 @@ func (t *TokenCredential) DeleteByClientID(
 	`
 	args := []any{clientID}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -102,7 +102,7 @@ func (t *TokenCredential) DeleteByClientID(
 func (t *TokenCredential) FindByClientID(
 	ctx context.Context, tx port.DBTX, clientID string,
 ) (domain.TokenCredential, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, "adapter.pg.token-credential.find-by-client-id")
+	ctx, span := mon.Tracer().Start(ctx, "adapter.pg.token-credential.find-by-client-id")
 	defer span.End()
 
 	query := `
@@ -122,7 +122,7 @@ func (t *TokenCredential) FindByClientID(
 	`
 	args := []any{clientID}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query",
 		slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
@@ -139,7 +139,7 @@ func (t *TokenCredential) FindByClientID(
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			monitoring.Logger().DebugContext(
+			mon.Logger().DebugContext(
 				ctx, "clientID not found", slog.Any("err", err),
 			)
 			return domain.TokenCredential{}, errors.Join(port.ErrDataNotFound, err)

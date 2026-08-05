@@ -1,7 +1,7 @@
 package http
 
 import (
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 
 	"github.com/labstack/echo/v5"
 )
@@ -9,7 +9,7 @@ import (
 func requestID() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
-			_, span := monitoring.Tracer().Start(
+			_, span := mon.Tracer().Start(
 				c.Request().Context(), "http.middleware.request-id-setter",
 			)
 			defer span.End()

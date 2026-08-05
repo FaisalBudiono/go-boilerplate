@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 )
 
 //go:embed ver/*
@@ -25,7 +25,7 @@ func Version() string {
 			return versionDefault
 		}
 
-		monitoring.Logger().Error(
+		mon.Logger().Error(
 			"failed to read version file",
 			slog.String("message", err.Error()),
 			slog.Any("err", err),

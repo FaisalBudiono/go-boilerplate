@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 )
 
@@ -41,7 +41,7 @@ func Validate(
 	uerr *UnprocessableErr,
 	inputs []RuleReq,
 ) error {
-	ctx, span := monitoring.Tracer().Start(ctx, "http.validate")
+	ctx, span := mon.Tracer().Start(ctx, "http.validate")
 	defer span.End()
 
 	for _, input := range inputs {

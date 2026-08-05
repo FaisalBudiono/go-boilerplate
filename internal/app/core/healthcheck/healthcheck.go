@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
 	"FaisalBudiono/go-boilerplate/internal/app/port"
@@ -27,7 +27,7 @@ type reqCheck interface {
 }
 
 func (srv *Healthcheck) Check(req reqCheck) []domain.HealthcheckDep {
-	ctx, span := monitoring.Tracer().Start(req.Context(), "core.healthcheck.check")
+	ctx, span := mon.Tracer().Start(req.Context(), "core.healthcheck.check")
 	defer span.End()
 
 	return []domain.HealthcheckDep{
@@ -36,7 +36,7 @@ func (srv *Healthcheck) Check(req reqCheck) []domain.HealthcheckDep {
 }
 
 func (srv *Healthcheck) checkDB(ctx context.Context) domain.HealthcheckDep {
-	ctx, span := monitoring.Tracer().Start(ctx, "core.healthcheck.db")
+	ctx, span := mon.Tracer().Start(ctx, "core.healthcheck.db")
 	defer span.End()
 
 	health := domain.NewHealthcheckDep("database", false, "")

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"FaisalBudiono/go-boilerplate/internal/app/core/healthcheck"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 
 	"github.com/labstack/echo/v5"
@@ -14,7 +14,7 @@ import (
 
 func Health(srv *healthcheck.Healthcheck, version string) echo.HandlerFunc {
 	return func(c *echo.Context) error {
-		ctx, span := monitoring.Tracer().Start(c.Request().Context(), "http.route.health")
+		ctx, span := mon.Tracer().Start(c.Request().Context(), "http.route.health")
 		defer span.End()
 
 		deps := srv.Check(&reqHealth{ctx})

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/queryutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -28,22 +28,22 @@ type Role struct{}
 func (r *Role) AddByUserID(
 	ctx context.Context, tx port.DBTX, userID string, roles []domain.Role,
 ) error {
-	ctx, span := monitoring.Tracer().Start(ctx, r.sName("add-by-user-id"))
+	ctx, span := mon.Tracer().Start(ctx, r.sName("add-by-user-id"))
 	defer span.End()
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "input", slog.String("userID", userID),
 		slog.Any("roles", roles),
 	)
 
 	if len(roles) == 0 {
-		monitoring.Logger().WarnContext(ctx, "roles is empty")
+		mon.Logger().WarnContext(ctx, "roles is empty")
 		return nil
 	}
 
 	realID, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
-		monitoring.Logger().ErrorContext(
+		mon.Logger().ErrorContext(
 			ctx, "failed to parse userID", slog.String("userID", userID),
 		)
 		return err
@@ -66,7 +66,7 @@ func (r *Role) AddByUserID(
 		strings.Join(values, ","),
 	)
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query", slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
 	)
@@ -86,16 +86,16 @@ func (r *Role) AddByUserID(
 func (r *Role) CleanByUserID(
 	ctx context.Context, tx port.DBTX, userID string,
 ) error {
-	ctx, span := monitoring.Tracer().Start(ctx, r.sName("clean-by-user-id"))
+	ctx, span := mon.Tracer().Start(ctx, r.sName("clean-by-user-id"))
 	defer span.End()
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "input", slog.String("userID", userID),
 	)
 
 	realID, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
-		monitoring.Logger().ErrorContext(
+		mon.Logger().ErrorContext(
 			ctx, "failed to parse userID", slog.String("userID", userID),
 		)
 		return err
@@ -109,7 +109,7 @@ func (r *Role) CleanByUserID(
 	`
 	args := []any{realID}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query", slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
 	)
@@ -129,16 +129,16 @@ func (r *Role) CleanByUserID(
 func (r *Role) GetMapByUserID(
 	ctx context.Context, tx port.DBTX, userIDs []string,
 ) (map[string][]domain.Role, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, r.sName("get-map-by-user-id"))
+	ctx, span := mon.Tracer().Start(ctx, r.sName("get-map-by-user-id"))
 	defer span.End()
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "input", slog.Any("userIDs", userIDs),
 	)
 
 	res := make(map[string][]domain.Role)
 	if len(userIDs) == 0 {
-		monitoring.Logger().WarnContext(ctx, "user ids is empty")
+		mon.Logger().WarnContext(ctx, "user ids is empty")
 		return res, nil
 	}
 
@@ -159,7 +159,7 @@ func (r *Role) GetMapByUserID(
 	for _, userID := range userIDs {
 		realID, err := strconv.ParseInt(userID, 10, 64)
 		if err != nil {
-			monitoring.Logger().ErrorContext(
+			mon.Logger().ErrorContext(
 				ctx, "failed to parse userID", slog.String("userID", userID),
 			)
 			realID = -1
@@ -167,7 +167,7 @@ func (r *Role) GetMapByUserID(
 		args = append(args, realID)
 	}
 
-	monitoring.Logger().DebugContext(
+	mon.Logger().DebugContext(
 		ctx, "query", slog.String("query", queryutil.Clean(query)),
 		slog.Any("args", args),
 	)

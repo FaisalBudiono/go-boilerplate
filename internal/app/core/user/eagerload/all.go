@@ -3,7 +3,7 @@ package eagerload
 import (
 	"context"
 
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/monitoring"
+	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/sliceutil"
 	"FaisalBudiono/go-boilerplate/internal/app/domain"
@@ -12,7 +12,7 @@ import (
 func (el *EagerLoad) All(
 	ctx context.Context, users []domain.User,
 ) ([]domain.UserEagerLoad, error) {
-	ctx, span := monitoring.Tracer().Start(ctx, el.sName("all"))
+	ctx, span := mon.Tracer().Start(ctx, el.sName("all"))
 	defer span.End()
 
 	if len(users) == 0 {
