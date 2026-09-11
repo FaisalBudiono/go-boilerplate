@@ -44,7 +44,27 @@ func run(ctx context.Context) error {
 
 	mon.SetUp(tracer, logger)
 
-	ctx, span := mon.Tracer().Start(ctx, "app.main")
+	err = setupStartup(ctx)
+	if err != nil {
+		return err
+	}
+
+	e := echo.New()
+
+	http.Middleware(e)
+	http.Routes(e)
+
+	err = e.Start(":8080")
+	if err != nil {
+		e.Logger.ErrorContext(ctx, err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func setupStartup(ctx context.Context) error {
+	ctx, span := mon.Tracer().Start(ctx, "app.main.setup-startup")
 	defer span.End()
 
 	shutdowns, err := providers.Setup(ctx)
@@ -64,13 +84,5 @@ func run(ctx context.Context) error {
 		}
 	}()
 
-	e := echo.New()
-
-	http.Middleware(e)
-	http.Routes(e)
-
-	err = e.Start(":8080")
-	e.Logger.ErrorContext(ctx, err.Error())
-
-	return err
+	return nil
 }
