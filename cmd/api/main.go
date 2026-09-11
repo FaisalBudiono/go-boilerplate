@@ -70,7 +70,10 @@ func run(ctx context.Context) error {
 	http.Routes(e)
 
 	err = e.Start(":8080")
-	e.Logger.ErrorContext(ctx, err.Error())
+	if err != nil {
+		e.Logger.ErrorContext(ctx, err.Error())
+		return err
+	}
 
-	return err
+	return nil
 }
