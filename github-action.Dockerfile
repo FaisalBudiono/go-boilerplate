@@ -1,4 +1,4 @@
-FROM golang:1.26 AS base
+FROM golang:1.27 AS base
 
 FROM alpine:3.10 AS api
 USER 1000

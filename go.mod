@@ -1,6 +1,6 @@
 module FaisalBudiono/go-boilerplate
 
-go 1.26.1
+go 1.27.1
 
 require (
 	github.com/XSAM/otelsql v0.42.0
