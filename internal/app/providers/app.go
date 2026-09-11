@@ -32,18 +32,28 @@ type providerConfig struct {
 
 var provider = providerConfig{}
 
-type shutdown func() error
+func newShutdowner(sd func() error) *shutdowner {
+	return &shutdowner{sd: sd}
+}
 
-func Setup(ctx context.Context) ([]shutdown, error) {
+type shutdowner struct {
+	sd func() error
+}
+
+func (s *shutdowner) Shutdown() error {
+	return s.sd()
+}
+
+func Setup(ctx context.Context) ([]*shutdowner, error) {
 	ctx, span := mon.Tracer().Start(ctx, "providers.setup")
 	defer span.End()
 
-	var shutdowns []shutdown
+	var shutdowners []*shutdowner
 	var err error
 	defer func() {
 		if err != nil {
-			for i, sd := range shutdowns {
-				err := sd()
+			for i, sd := range shutdowners {
+				err := sd.Shutdown()
 				if err != nil {
 					otelutil.SpanLogError(
 						span, err, otelutil.WithErrorLog(ctx),
@@ -58,9 +68,9 @@ func Setup(ctx context.Context) ([]shutdown, error) {
 
 	dbconn, err := db.PostgresConn()
 	if err != nil {
-		return shutdowns, err
+		return shutdowners, err
 	}
-	shutdowns = append(shutdowns, dbconn.Close)
+	shutdowners = append(shutdowners, newShutdowner(dbconn.Close))
 
 	argonHasher := hash.NewArgon()
 	userSigner := jwt.NewUserSigner(
@@ -95,7 +105,7 @@ func Setup(ctx context.Context) ([]shutdown, error) {
 		},
 	}
 
-	return shutdowns, nil
+	return shutdowners, nil
 }
 
 func App() *providerConfig {

@@ -10,7 +10,6 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/app"
 	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/otelutil"
 	"FaisalBudiono/go-boilerplate/internal/app/providers"
 
 	"github.com/labstack/echo/v5"
@@ -44,7 +43,15 @@ func run(ctx context.Context) error {
 
 	mon.SetUp(tracer, logger)
 
-	err = setupStartup(ctx)
+	shutdowns, err := setupStartup(ctx)
+	defer func() {
+		for i, sd := range shutdowns {
+			err := sd.Shutdown()
+			if err != nil {
+				log.Printf("shutdown #%d error: %s", i, err)
+			}
+		}
+	}()
 	if err != nil {
 		return err
 	}
@@ -63,26 +70,23 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func setupStartup(ctx context.Context) error {
+type shutdowner interface {
+	Shutdown() error
+}
+
+func setupStartup(ctx context.Context) ([]shutdowner, error) {
 	ctx, span := mon.Tracer().Start(ctx, "app.main.setup-startup")
 	defer span.End()
 
-	shutdowns, err := providers.Setup(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		for i, sd := range shutdowns {
-			err := sd()
-			if err != nil {
-				otelutil.SpanLogError(
-					span, err,
-					otelutil.WithErrorLog(ctx),
-					otelutil.WithMessage(fmt.Sprintf("failed to shutdown provider #%d", i)),
-				)
-			}
-		}
-	}()
+	var shutdowners []shutdowner
 
-	return nil
+	sds, err := providers.Setup(ctx)
+	if err != nil {
+		return shutdowners, err
+	}
+	for _, sd := range sds {
+		shutdowners = append(shutdowners, sd)
+	}
+
+	return shutdowners, nil
 }
