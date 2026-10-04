@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http"
@@ -27,6 +29,9 @@ func main() {
 }
 
 func run(ctx context.Context) error {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
 	shutdown, err := otel.SetupOTelSDK(ctx)
 	if err != nil {
 		return err
@@ -61,7 +66,7 @@ func run(ctx context.Context) error {
 	http.Middleware(e)
 	http.Routes(e)
 
-	err = e.Start(":8080")
+	err = echo.StartConfig{Address: ":8080"}.Start(ctx, e)
 	if err != nil {
 		e.Logger.ErrorContext(ctx, err.Error())
 		return err
