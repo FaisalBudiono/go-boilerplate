@@ -5,10 +5,7 @@ import (
 	"errors"
 	"io/fs"
 	"log"
-	"log/slog"
 	"strings"
-
-	"FaisalBudiono/go-boilerplate/internal/app/core/util/mon"
 )
 
 //go:embed ver/*
@@ -25,11 +22,6 @@ func Version() string {
 			return versionDefault
 		}
 
-		mon.Logger().Error(
-			"failed to read version file",
-			slog.String("message", err.Error()),
-			slog.Any("err", err),
-		)
 		log.Fatalf("failed to read version file: %s", err)
 	}
 

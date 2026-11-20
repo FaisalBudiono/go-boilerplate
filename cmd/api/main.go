@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
+	"io"
+	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/configuration/otel"
 	"FaisalBudiono/go-boilerplate/internal/app/adapter/in/http"
@@ -13,20 +17,30 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/providers"
 
 	"github.com/labstack/echo/v5"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 func main() {
 	app.BindENV()
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	mon.SetUp(
+		noop.Tracer{},
+		slog.New(slog.NewJSONHandler(io.Discard, nil)),
+	)
 
 	if err := run(ctx); err != nil {
-		log.Println(err)
+		mon.Stdout().ErrorContext(ctx, "error caught on", slog.Any("err", err))
 		os.Exit(1)
 	}
 }
 
 func run(ctx context.Context) error {
+	ctx, cancel := context.WithCancelCause(ctx)
+	defer cancel(errors.New("from main defer"))
+
 	shutdown, err := otel.SetupOTelSDK(ctx)
 	if err != nil {
 		return err
@@ -48,7 +62,9 @@ func run(ctx context.Context) error {
 		for i, sd := range shutdowns {
 			err := sd.Shutdown()
 			if err != nil {
-				log.Printf("shutdown #%d error: %s", i, err)
+				mon.Stdout().ErrorContext(
+					ctx, fmt.Sprintf("shutdown #%d error", i), slog.Any("err", err),
+				)
 			}
 		}
 	}()
@@ -61,7 +77,7 @@ func run(ctx context.Context) error {
 	http.Middleware(e)
 	http.Routes(e)
 
-	err = e.Start(":8080")
+	err = echo.StartConfig{Address: ":8080"}.Start(ctx, e)
 	if err != nil {
 		e.Logger.ErrorContext(ctx, err.Error())
 		return err
