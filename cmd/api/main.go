@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"io"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,6 +17,7 @@ import (
 	"FaisalBudiono/go-boilerplate/internal/app/providers"
 
 	"github.com/labstack/echo/v5"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 func main() {
@@ -24,8 +26,13 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
+	mon.SetUp(
+		noop.Tracer{},
+		slog.New(slog.NewJSONHandler(io.Discard, nil)),
+	)
+
 	if err := run(ctx); err != nil {
-		log.Println(err)
+		mon.Stdout().ErrorContext(ctx, "error caught on", slog.Any("err", err))
 		os.Exit(1)
 	}
 }
@@ -55,7 +62,9 @@ func run(ctx context.Context) error {
 		for i, sd := range shutdowns {
 			err := sd.Shutdown()
 			if err != nil {
-				log.Printf("shutdown #%d error: %s", i, err)
+				mon.Stdout().ErrorContext(
+					ctx, fmt.Sprintf("shutdown #%d error", i), slog.Any("err", err),
+				)
 			}
 		}
 	}()
