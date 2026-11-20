@@ -12,8 +12,8 @@ CREATE TABLE token_credentials (
     client_secret VARCHAR(255) NOT NULL,
     login_method VARCHAR(255) NOT NULL,
     login_id VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
